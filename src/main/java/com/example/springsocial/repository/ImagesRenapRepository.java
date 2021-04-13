@@ -21,4 +21,5 @@ public interface ImagesRenapRepository
 			CrudCustom<ImagesRenapModel> {	
 	
 	ImagesRenapModel findByCui(String cui);
+	 boolean existsBycui(String cui);
 }

@@ -53,14 +53,13 @@ public class ImagesRenapController <T> implements CrudController {
 		if (!userPrincipal.hasPermissionToRoute(request))
 			return new RestResponse(null,new CustomException("Acceso denegado",ErrorCode.ACCESS_DENIED, this.getClass().getSimpleName(),0));
 		
-		if (userPrincipal.getCode().toString().length()==0) 
-			return new RestResponse(null,new CustomException("CUI incorrecto",ErrorCode.REST_VALIDATIONS, this.getClass().getSimpleName(),0));
 		RestResponse response = new RestResponse();
 		String authTokenHeader = request.getHeader("Authorization");
 		ObjectSetGet error= new ObjectSetGet();
 		
 		try {
-			
+			boolean userCuiExist = repository.existsBycui(cui);
+			if (userCuiExist == false) return new RestResponse(null,new CustomException("Número de CUI inválido.",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			ImagesRenapModel imagesRenap= repository.findByCui(cui);
 			
 			response.setData(imagesRenap);
@@ -70,7 +69,6 @@ public class ImagesRenapController <T> implements CrudController {
 			CustomException customExcepction=  new CustomException(exception.getMessage(),exception,ErrorCode.REST_UPDATE,this.getClass().getSimpleName());
 			response.setError(exception); 
 			response.setError(customExcepction);
-		
 		}
 		return response;
 	}
