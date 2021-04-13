@@ -26,7 +26,7 @@ RUN mvn package
 
 FROM openjdk:8-jdk-alpine AS builder
 COPY --from=build-env /app/target target
-ENTRYPOINT ["java","-jar","target/Ixmukane-api-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","target/tse-imagenes-renap-api-0.0.1-SNAPSHOT.jar"]
 
 
 
