@@ -22,10 +22,10 @@ public class ImagesRenapModel implements Serializable{
 	private	byte[] fotoCiudadano;
 	
 	@Column(name="firma")
-	private	byte[] firmCiudadano;
+	private	byte[] firmaCiudadano;
 	
 	@Column(name="huella")
-	private	byte[] huellaCiudano;
+	private	byte[] huellaCiudadano;
 	
 	@Column(name="status")
 	private	Long statusImagenes;
@@ -38,12 +38,12 @@ public class ImagesRenapModel implements Serializable{
 		return fotoCiudadano;
 	}
 
-	public byte[] getFirmCiudadano() {
-		return firmCiudadano;
+	public byte[] getFirmaCiudadano() {
+		return firmaCiudadano;
 	}
 
-	public byte[] getHuellaCiudano() {
-		return huellaCiudano;
+	public byte[] getHuellaCiudadano() {
+		return huellaCiudadano;
 	}
 
 	public Long getStatusImagenes() {

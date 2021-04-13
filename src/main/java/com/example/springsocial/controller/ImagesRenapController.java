@@ -45,18 +45,11 @@ public class ImagesRenapController <T> implements CrudController {
 
 
 	
-	@PostConstruct
-	private void init() {
-		crud.setRepository(this.repository);
-		crud.setModelName(this.moduleName);
-		crud.setEntitiRepository(this.entitiRepository);
-		crud.setElementRepository(this.elementRepository);
-		repositories.put(this.moduleName,this.repository);
-	}	 
+
 	@GetMapping("list/{cui}")
     @PreAuthorize("hasRole('USER')")
     public RestResponse list(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@PathVariable String cui) {
-		init();
+
 		if (!userPrincipal.hasPermissionToRoute(request))
 			return new RestResponse(null,new CustomException("Acceso denegado",ErrorCode.ACCESS_DENIED, this.getClass().getSimpleName(),0));
 		
