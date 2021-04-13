@@ -1,0 +1,25 @@
+version: "3.0"
+services:
+    tse_imagenes_renap_api_dev:
+      container_name: tse_imagenes_renap_api_dev
+      build:
+        context: .
+      image: tse_imagenes_renap_api_dev
+      restart: unless-stopped
+      ports:
+      - "5008:5008"
+      networks:
+      - default
+      environment:
+        - BD_URL=jdbc:oracle:thin:@//100.100.1.98:1521/IMGS
+        - BD_USER=IMGSRENAP
+        - BD_PASSWORD=1MG5R3NAP
+        - SSO_API_URL=http://192.168.79.67:9762
+        - FILES_API_URL=http://192.168.79.66:3005
+        - CERTIFICATE_API_URL=http://192.168.79.66:3003
+        - CERTIFICATE_SIGN_URL= http://192.168.79.66:5000
+        - REQUEST_ROUTE=certificado_trabajador_solicitudes_dev
+networks:
+  default:
+    external:
+      name: tse_internal
