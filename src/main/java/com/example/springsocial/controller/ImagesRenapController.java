@@ -59,7 +59,7 @@ public class ImagesRenapController <T> implements CrudController {
 		
 		try {
 			boolean userCuiExist = repository.existsBycui(cui);
-			if (userCuiExist == false) return new RestResponse(null,new CustomException("Número de CUI inválido o no cuenta con Registros de Imagenes.",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
+			if (userCuiExist == false) return new RestResponse(null,new CustomException("No cuenta con Registros de Imagenes.",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			ImagesRenapModel imagesRenap= repository.findByCui(cui);
 			
 			response.setData(imagesRenap);
