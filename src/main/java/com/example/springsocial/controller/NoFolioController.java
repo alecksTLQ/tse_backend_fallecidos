@@ -32,7 +32,8 @@ public class NoFolioController <T> implements CrudController {
 	
 	@Autowired
 	NoFolioProcess folioprocess;
-	
+	@Autowired
+	NoFolioRepository repository;
 	RestResponse response = new RestResponse();
 	ObjectSetGet error= new ObjectSetGet();
 	
@@ -138,7 +139,7 @@ public class NoFolioController <T> implements CrudController {
 			objeto.setNrolinea(1);
 			objeto.setUsuario("hello");
 			//objeto.setNrofolio(repository.selectNoFolio());
-			//repository.save(objeto);
+			repository.save(objeto);
 			response.setData(objeto.getNrofolio());
 			
 		}catch(Exception e) {

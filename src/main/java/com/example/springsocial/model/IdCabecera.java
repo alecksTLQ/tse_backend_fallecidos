@@ -17,7 +17,7 @@ public class IdCabecera implements Serializable{
 	private static final long serialVersionUID = 1L;
 	@GeneratedValue(generator="default_gen")
 	@Column(name="NROFOLIO")
-	private	Long NROFOLIO;
+	private	Integer NROFOLIO;
 	
 	@Column(name="AÑOFOLIO")
 	private	Integer AÑOFOLIO;
@@ -27,16 +27,16 @@ public class IdCabecera implements Serializable{
 	public IdCabecera() {
 	}
 
-	public IdCabecera(Long nROFOLIO, Integer aÑOFOLIO) {
+	public IdCabecera(Integer nROFOLIO, Integer aÑOFOLIO) {
 		NROFOLIO = nROFOLIO;
 		AÑOFOLIO = aÑOFOLIO;
 	}
 
-	public Long getNROFOLIO() {
+	public Integer getNROFOLIO() {
 		return NROFOLIO;
 	}
 
-	public void setNROFOLIO(Long nROFOLIO) {
+	public void setNROFOLIO(Integer nROFOLIO) {
 		NROFOLIO = nROFOLIO;
 	}
 

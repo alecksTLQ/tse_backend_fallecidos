@@ -7,6 +7,7 @@ import javax.persistence.PersistenceUnit;
 import com.example.springsocial.crud.ModelSetGetTransaction;
 import com.example.springsocial.crud.ObjectSetGet;
 import com.example.springsocial.model.CabeceraFolioModell;
+import com.example.springsocial.model.DetalleFolio;
 import com.example.springsocial.model.NoFolioModel;
 import com.example.springsocial.security.UserPrincipal;
 import com.example.springsocial.tools.RestResponse;
@@ -56,6 +57,14 @@ public class CabeceraFolioTransaction {
 		modelTransaction.saveWithFlush(folio);
 	}
 	
+	public void insertDetalleFolio(DetalleFolio mdlDetalle) {
+		modelTransaction.saveWithFlush(mdlDetalle);
+	}
+	
+	public void updateCabeceraFolio(CabeceraFolioModell folio) {
+		modelTransaction.update(folio);
+	}
+	
 	private void confirmTransactionAndSetResult() {
 		transaction.commit();
 		response.setData(this.mdlCabeceraFolio);
@@ -80,6 +89,32 @@ public class CabeceraFolioTransaction {
 		}
 	}
 	
+	public void saveDetalle(DetalleFolio mdlDetalle) {
+		try {
+			
+			startTransaction();
+			insertDetalleFolio(mdlDetalle);
+			confirmTransactionAndSetResult();
+			
+		}catch(Exception e) {
+			transaction.rollback();
+			response.setError(e.getMessage());
+		}finally {
+			if(entityManager.isOpen()) entityManager.close();
+		}
+	}
 	
+	public void update(CabeceraFolioModell folio) {
+		try {
+			startTransaction();
+			updateCabeceraFolio(folio);
+			confirmTransactionAndSetResult();
+		}catch(Exception e) {
+			transaction.rollback();
+			response.setError(e.getMessage());
+		}finally {
+			if(entityManager.isOpen()) entityManager.close();
+		}
+	}
 	
 }

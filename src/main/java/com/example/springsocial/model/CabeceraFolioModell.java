@@ -15,14 +15,12 @@ import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="TCABECERAFOLIO")
-@SequenceGenerator(name = "default_gen", sequenceName = "nrofolio", allocationSize = 1)
+@Table(name="CABECERAFOLIO")
+@SequenceGenerator(name = "default_gen", sequenceName = "folio", allocationSize = 1)
 public class CabeceraFolioModell implements Serializable{
-
-	//@EmbeddedId
-	//private IdCabecera id;
-	@GeneratedValue(generator="default_gen")
+	 
 	@Id
+	@GeneratedValue(generator="default_gen") 
 	@Column(name="NROFOLIO")
 	private Integer NROFOLIO;
 	
@@ -34,12 +32,7 @@ public class CabeceraFolioModell implements Serializable{
 	
 	@Column(name="CODMUNIC")
 	private Integer CODMUNIC;
-	
-	@Column(name="FECINICIO")
-	private Date FECINICIO;
-	
-	@Column(name="FECFINALI")
-	private Date FECFINALI;
+
 	
 	@Column(name="FECSISTE")
 	private Date FECSISTE;
@@ -53,12 +46,16 @@ public class CabeceraFolioModell implements Serializable{
 	@Column(name="VERIFICA")
 	private String VERIFICA;
 	
-
+	@Column(name="LINEA")
+	private Integer LINEA;
 	
-		
 
-	public CabeceraFolioModell() {
-		this.getNROFOLIO();
+	public Integer getLINEA() {
+		return LINEA;
+	}
+
+	public void setLINEA(Integer lINEA) {
+		LINEA = lINEA;
 	}
 
 	public Integer getNROFOLIO() {
@@ -91,22 +88,6 @@ public class CabeceraFolioModell implements Serializable{
 
 	public void setCODMUNIC(Integer cODMUNIC) {
 		CODMUNIC = cODMUNIC;
-	}
-
-	public Date getFECINICIO() {
-		return FECINICIO;
-	}
-
-	public void setFECINICIO(Date fECINICIO) {
-		FECINICIO = fECINICIO;
-	}
-
-	public Date getFECFINALI() {
-		return FECFINALI;
-	}
-
-	public void setFECFINALI(Date fECFINALI) {
-		FECFINALI = fECFINALI;
 	}
 
 	public Date getFECSISTE() {

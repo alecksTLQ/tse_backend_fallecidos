@@ -31,8 +31,7 @@ public class NoFolioProcess <T> implements CrudController {
 	private EntityManagerFactory entityManagerFactory;
 	private ElementRepository elementRepository;
 	private EntitiRepository entitiRepository;
-	@Autowired
-	private NoFolioService servicio; //SERVICE
+	
 	@Autowired
 	private NoFolioRepository rpNoFolio;
 	

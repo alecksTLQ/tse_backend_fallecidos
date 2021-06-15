@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -11,13 +12,17 @@ import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="TDETALLEFOLIO")
-@SequenceGenerator(name="default_gen", sequenceName = "", allocationSize=1)
+@Table(name="DETALLEFOLIO")
+@SequenceGenerator(name="default_gen", sequenceName = "IDDETALLE", allocationSize=1)
 public class DetalleFolio implements Serializable{
 	
 	@Id
+	@GeneratedValue(generator="default_gen") 
+	@Column(name="ID")
+	private Integer ID;
+	
 	@Column(name="NROFOLIO")
-	private Long NROFOLIO;   
+	private Integer NROFOLIO;   
 	@Column(name="AÑOFOLIO")
 	private Integer AÑOFOLIO;  
 	@Column(name="NROLINEA")
@@ -59,26 +64,29 @@ public class DetalleFolio implements Serializable{
 	@Column(name="USRDIGITA")
 	private String USRDIGITA; 
 	@Column(name="USRVERIFI")
- 	private String USRVERIFI; 
-	@Column(name="FECHACOR")
-	private Date FECHACOR;  
-	@Column(name="ESTACOND")
-	private String ESTACOND;  
+ 	private String USRVERIFI;   
 	@Column(name="ESTATUS")
 	private String ESTATUS;  
 	@Column(name="CUI")
 	private Long CUI;
 	
 	
-	
-	
 	public DetalleFolio() {
 	}
 	
-	public Long getNROFOLIO() {
+	
+	public Integer getID() {
+		return ID;
+	}
+
+	public void setID(Integer iD) {
+		ID = iD;
+	}
+
+	public Integer getNROFOLIO() {
 		return NROFOLIO;
 	}
-	public void setNROFOLIO(Long nROFOLIO) {
+	public void setNROFOLIO(Integer nROFOLIO) {
 		NROFOLIO = nROFOLIO;
 	}
 	public Integer getAÑOFOLIO() {
@@ -207,18 +215,7 @@ public class DetalleFolio implements Serializable{
 	public void setUSRVERIFI(String uSRVERIFI) {
 		USRVERIFI = uSRVERIFI;
 	}
-	public Date getFECHACOR() {
-		return FECHACOR;
-	}
-	public void setFECHACOR(Date fECHACOR) {
-		FECHACOR = fECHACOR;
-	}
-	public String getESTACOND() {
-		return ESTACOND;
-	}
-	public void setESTACOND(String eSTACOND) {
-		ESTACOND = eSTACOND;
-	}
+
 	public String getESTATUS() {
 		return ESTATUS;
 	}
