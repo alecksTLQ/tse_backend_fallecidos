@@ -24,16 +24,16 @@ import com.example.springsocial.transaction.NoFolioTransaction;
 
 
 @SuppressWarnings({"rawtypes", "unchecked","unused"})
-@Service
-public class NoFolioProcess <T> implements CrudController {
+public class NoFolioProcess implements CrudController {
 	
-	@Autowired
+	@PersistenceUnit
 	private EntityManagerFactory entityManagerFactory;
-	private ElementRepository elementRepository;
-	private EntitiRepository entitiRepository;
 	
 	@Autowired
 	private NoFolioRepository rpNoFolio;
+	private ElementRepository elementRepository;
+	private EntitiRepository entitiRepository;
+
 	
 	//NOMBRE MODELO
 	private String moduloName = "NoFolioModel";	
@@ -48,6 +48,12 @@ public class NoFolioProcess <T> implements CrudController {
 	private NoFolioModel mdlFolio, mdlfolio2 = new NoFolioModel();
 	
 	private CRUD crud = new CRUD();
+	
+	public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+		if(entityManagerFactory!=null) {
+			this.entityManagerFactory = entityManagerFactory;
+		}
+	}
 	
 	
 	@PostConstruct

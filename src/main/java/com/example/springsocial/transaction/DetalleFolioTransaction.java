@@ -5,31 +5,25 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.example.springsocial.crud.ModelSetGetTransaction;
 import com.example.springsocial.crud.ObjectSetGet;
 import com.example.springsocial.model.CabeceraFolioModell;
 import com.example.springsocial.model.DetalleFolio;
-import com.example.springsocial.model.NoFolioModel;
-import com.example.springsocial.repository.CabeceraFolioRepository;
 import com.example.springsocial.security.UserPrincipal;
 import com.example.springsocial.tools.RestResponse;
 
 @SuppressWarnings({"rawtypes","unused","unchecked"})
-public class CabeceraFolioTransaction {
+public class DetalleFolioTransaction {
 	
 	@PersistenceUnit
 	private EntityManagerFactory entityManagerFactory;
 	private EntityTransaction transaction = null;
 	private EntityManager entityManager = null;
-	private Integer id;
-	@Autowired
-	CabeceraFolioRepository rpCabeceraFolio;
 	
 	private ModelSetGetTransaction modelTransaction = new ModelSetGetTransaction();
 	private ObjectSetGet data  = new ObjectSetGet();
-	private CabeceraFolioModell mdlCabeceraFolio = new CabeceraFolioModell();
+	
+	private DetalleFolio mdlDetalleFolio = new DetalleFolio();
 	private UserPrincipal userPrincipal = null;
 	private RestResponse response = new RestResponse();
 	
@@ -56,45 +50,25 @@ public class CabeceraFolioTransaction {
 		this.modelTransaction.setEntityManager(entityManager);
 	}
 	
-	public CabeceraFolioModell getData() {
-		return this.mdlCabeceraFolio;
-	}
-	
-	public void insertCabeceraFolio(CabeceraFolioModell folio) {
-		modelTransaction.saveWithFlush(folio);
+	public DetalleFolio getData() {
+		return this.mdlDetalleFolio;
 	}
 	
 	public void insertDetalleFolio(DetalleFolio mdlDetalle) {
 		modelTransaction.saveWithFlush(mdlDetalle);
 	}
 	
-	public void updateCabeceraFolio(CabeceraFolioModell folio) {
-		modelTransaction.update(folio);
-		
+	public void updateDetalleFolio(DetalleFolio mdlDetalle) {
+		modelTransaction.update(mdlDetalle);
 	}
 	
 	private void confirmTransactionAndSetResult() {
 		transaction.commit();
-		response.setData(this.mdlCabeceraFolio);
+		response.setData(this.mdlDetalleFolio);
 	}
 	
 	public RestResponse GetResponse() {
 		return this.response;
-	}
-	
-	public void save(CabeceraFolioModell folio) {
-		try {
-			
-			startTransaction();
-			insertCabeceraFolio(folio);
-			confirmTransactionAndSetResult();
-			
-		}catch(Exception e) {
-			transaction.rollback();
-			response.setError(e.getMessage());
-		}finally {
-			if(entityManager.isOpen()) entityManager.close();
-		}
 	}
 	
 	public void saveDetalle(DetalleFolio mdlDetalle) {
@@ -112,10 +86,10 @@ public class CabeceraFolioTransaction {
 		}
 	}
 	
-	public Integer update(CabeceraFolioModell folio) {
+	public void updateDetalle(DetalleFolio mdlDetalle) {
 		try {
 			startTransaction();
-			updateCabeceraFolio(folio);
+			updateDetalleFolio(mdlDetalle);
 			confirmTransactionAndSetResult();
 			
 		}catch(Exception e) {
@@ -124,7 +98,8 @@ public class CabeceraFolioTransaction {
 		}finally {
 			if(entityManager.isOpen()) entityManager.close();
 		}
-		return id;
 	}
+	
+	
 	
 }

@@ -4,32 +4,27 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.example.springsocial.crud.CRUD;
 import com.example.springsocial.generic.CrudController;
-import com.example.springsocial.model.CabeceraFolioModell;
-import com.example.springsocial.repository.CabeceraFolioRepository;
+import com.example.springsocial.model.DetalleFolio;
+import com.example.springsocial.repository.DetalleFolioRepository;
 import com.example.springsocial.repository.ElementRepository;
 import com.example.springsocial.repository.EntitiRepository;
-import com.example.springsocial.tools.RestResponse;
-import com.example.springsocial.transaction.CabeceraFolioTransaction;
-
+import com.example.springsocial.transaction.DetalleFolioTransaction;
 
 @SuppressWarnings({"rawtypes", "unchecked","unused"})
-public class CabeceraFolioProcess implements CrudController{
-	
+public class DetalleFolioProcess implements CrudController{
+
 	
 	@PersistenceUnit
 	private EntityManagerFactory entityManagerFactory;
 	@Autowired
-	private CabeceraFolioRepository rpCabeceraFolio;
+	private DetalleFolioRepository prDetalleFolio;
 	private ElementRepository elementRepository;
 	private EntitiRepository entitiRepository;
 	
-	private String moduloName = "CabeceraFolioModell";
-	private CabeceraFolioTransaction mdlTransaction = new CabeceraFolioTransaction();
-	RestResponse response = new RestResponse();
+	private String moduloName = "DetalleFolio";
+	private DetalleFolioTransaction mdlTransaction = new DetalleFolioTransaction();
 	private CRUD crud = new CRUD();
 	
 	public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
@@ -40,45 +35,50 @@ public class CabeceraFolioProcess implements CrudController{
 	
 	@PostConstruct
     private void init() {
-    	crud.setRepository(this.rpCabeceraFolio);
+    	crud.setRepository(this.prDetalleFolio);
     	crud.setModelName(this.moduloName);
     	crud.setEntitiRepository(this.entitiRepository);
     	crud.setElementRepository(this.elementRepository);
-    	repositories.put(this.moduloName, this.rpCabeceraFolio);
+    	repositories.put(this.moduloName, this.prDetalleFolio);
     }
 	
-	public String createCabecera(CabeceraFolioModell mdlFolio, EntityManagerFactory entityManagerFactory) {
-		String respuesta =  null;
+	public String createDetalle(DetalleFolio mdlDetalle, EntityManagerFactory entityManagerFactory) {
+		String respuesta = null;
+		
 		try {
+			
 			mdlTransaction.setEntityManagerFactory(entityManagerFactory);
-			mdlTransaction.save(mdlFolio);
+			mdlTransaction.saveDetalle(mdlDetalle);
 			
 			if(mdlTransaction.GetResponse().getError()!=null)throw new Exception(mdlTransaction.GetResponse().getError().toString());
 				else {
 				respuesta = "Insercion correcta";
 			}
 		}catch(Exception e) {
-			respuesta= e.getMessage();
+			respuesta = e.getMessage();
 		}
 		
 		return respuesta;
 		
 	}
 	
-	public String updateCabecera(CabeceraFolioModell mdlFolio, EntityManagerFactory entityManagerFactory) {
-		String respuesta = null;
-		 try {
-			mdlTransaction.setEntityManagerFactory(entityManagerFactory);
-			mdlTransaction.update(mdlFolio);
+	public String updateDetalle(DetalleFolio mdlDetalle, EntityManagerFactory entityManagerFactory) {
+		String respuesta = "";
+		try {
 			
-			if(mdlTransaction.GetResponse().getError()!=null) throw new Exception(mdlTransaction.GetResponse().getError().toString());
-				else {
-				respuesta = "Insercion correcta";
+			mdlTransaction.setEntityManagerFactory(entityManagerFactory);
+			mdlTransaction.updateDetalle(mdlDetalle);
+			
+			if(mdlTransaction.GetResponse().getError()!=null)throw new Exception(mdlTransaction.GetResponse().getError().toString());
+			else {
+				respuesta = "Actualizacion correcta";
 			}
-			 
-		 }catch(Exception e) {
-			 respuesta = e.getMessage();
-		 }
+			
+		}catch(Exception e) {
+			System.out.println(e.getMessage());
+			respuesta = e.getMessage();
+		}
+		
 		return respuesta;
 	}
 	

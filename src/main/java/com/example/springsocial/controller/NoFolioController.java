@@ -29,14 +29,14 @@ import com.example.springsocial.transaction.NoFolioTransaction;
 @RequestMapping("Defunciones")
 public class NoFolioController <T> implements CrudController {
 
-	
 	@Autowired
-	NoFolioProcess folioprocess;
+	private EntityManagerFactory entityManagerFactory;
 	@Autowired
 	NoFolioRepository repository;
+	
+	private NoFolioProcess folioprocess = new NoFolioProcess();
 	RestResponse response = new RestResponse();
 	ObjectSetGet error= new ObjectSetGet();
-	
 	
 	/* METODOS  */
 	@PreAuthorize("hasRole('USER')")
@@ -53,7 +53,8 @@ public class NoFolioController <T> implements CrudController {
 				return new RestResponse(null, new CustomException("Debe completar Campo Usuario", ErrorCode.REST_CREATE, this.getClass().getSimpleName(),0));
 			if(cantidad==null) 
 				return new RestResponse(null, new CustomException("Debe completar Campo Cantidad", ErrorCode.REST_CREATE, this.getClass().getSimpleName(),0));
-
+			
+			folioprocess.setEntityManagerFactory(entityManagerFactory);
 			response = folioprocess.create(usuario, cantidad);
 			
 		}catch(Exception exception) {
@@ -76,6 +77,7 @@ public class NoFolioController <T> implements CrudController {
 			if(usuario==null || usuario=="") 
 				return new RestResponse(null, new CustomException("Usuario no obtenido", ErrorCode.REST_CREATE, this.getClass().getSimpleName(),0));
 			
+			folioprocess.setEntityManagerFactory(entityManagerFactory);
 			response.setData(folioprocess.obtener(usuario));
 			
 		}catch(Exception exception) {
@@ -94,6 +96,7 @@ public class NoFolioController <T> implements CrudController {
 		String authTokenHeader = request.getHeader("Authorization");
 		try {
 			
+			folioprocess.setEntityManagerFactory(entityManagerFactory);
 			response = folioprocess.obtenerRegistrosFolios();
 			
 		}catch(Exception exception) {
@@ -116,6 +119,7 @@ public class NoFolioController <T> implements CrudController {
 			if(folio==null) 
 				return new RestResponse(null, new CustomException("Falta definicion del campo folio", ErrorCode.REST_CREATE, this.getClass().getSimpleName(),0));
 			
+			folioprocess.setEntityManagerFactory(entityManagerFactory);
 			response.setData(folioprocess.EliminarFolio(usuario, folio));
 			
 		}catch(Exception exception) {
@@ -127,7 +131,7 @@ public class NoFolioController <T> implements CrudController {
 		return response;
 	}
 	
-	@GetMapping("id")
+	/*@GetMapping("id")
 	public RestResponse id() {
 		
 		
@@ -148,7 +152,7 @@ public class NoFolioController <T> implements CrudController {
 		
 		
 		return response;
-	}
+	}*/
 	
 	
 }

@@ -7,10 +7,10 @@ import javax.persistence.*;
 @SuppressWarnings("serial")
 @Entity
 @Table(name="TNROFOLIO")
-@SequenceGenerator(name = "default_gen", sequenceName = "folio", allocationSize = 1)
+//@SequenceGenerator(name = "default_gen", sequenceName = "folio", allocationSize = 1)
 public class NoFolioModel implements Serializable{
 	
-	@GeneratedValue(generator="default_gen") 
+	//@GeneratedValue(generator="default_gen") 
 	@Id
 	@Column(name="NROFOLIO")
 	private Integer nrofolio;

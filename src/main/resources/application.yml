@@ -66,4 +66,4 @@ app:
       - myandroidapp://oauth2/redirect
       - myiosapp://oauth2/redirect
 server:
-    port: 5008
+    port: 5010

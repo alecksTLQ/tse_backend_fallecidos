@@ -16,13 +16,14 @@ import javax.persistence.Table;
 @SequenceGenerator(name = "default_gen", sequenceName = "folio", allocationSize = 1)
 public class CabeceraFolioModel implements Serializable{
 	
-	@Id
 	@GeneratedValue(generator="default_gen")
+	@Id
 	@Column(name="NROFOLIO")
-	private Long NROFOLIO;
+	private	Integer NROFOLIO;
 	
 	@Column(name="AÑOFOLIO")
-	private Integer AÑOFOLIO;
+	private	Integer AÑOFOLIO;
+	
 	@Column(name="CODDEPTO")
 	private Integer CODDEPTO;
 	
@@ -37,7 +38,7 @@ public class CabeceraFolioModel implements Serializable{
 	
 	@Column(name="FECSISTE")
 	private Date FECSISTE;
-	
+
 	@Column(name="USRACTUA")
 	private String USRACTUA;
 	
@@ -48,17 +49,17 @@ public class CabeceraFolioModel implements Serializable{
 	private String VERIFICA;
 	
 	
-	
-
 	public CabeceraFolioModel() {
 		
 	}
+	
+	
 
-	public Long getNROFOLIO() {
+	public Integer getNROFOLIO() {
 		return NROFOLIO;
 	}
 
-	public void setNROFOLIO(Long nROFOLIO) {
+	public void setNROFOLIO(Integer nROFOLIO) {
 		NROFOLIO = nROFOLIO;
 	}
 
@@ -66,9 +67,13 @@ public class CabeceraFolioModel implements Serializable{
 		return AÑOFOLIO;
 	}
 
+
+
 	public void setAÑOFOLIO(Integer aÑOFOLIO) {
 		AÑOFOLIO = aÑOFOLIO;
 	}
+
+
 
 	public Integer getCODDEPTO() {
 		return CODDEPTO;

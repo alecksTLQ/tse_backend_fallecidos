@@ -72,6 +72,7 @@ public class DetalleFolio implements Serializable{
 	
 	
 	public DetalleFolio() {
+		this.getID();
 	}
 	
 	
