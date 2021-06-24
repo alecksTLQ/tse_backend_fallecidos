@@ -40,8 +40,8 @@ import com.example.springsocial.transaction.NoFolioTransaction;
 
 
 @SuppressWarnings({"rawtypes", "unchecked","unused"})
-@RestController
-@RequestMapping("EmisionesDpi")
+//@RestController
+//@RequestMapping("EmisionesDpi")
 public class CaptacionController <T> implements CrudController{
 	
 	@Autowired

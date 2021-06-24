@@ -23,7 +23,8 @@ import java.util.stream.Stream;
  */
 public class DateTools<T> {
 	private SimpleDateFormat _dateTimeSpanishFormat = new SimpleDateFormat ("dd/MM/yyyy hh:mm:ss");
-	private SimpleDateFormat _dateSpanishFormat = new SimpleDateFormat ("dd/MM/yyyy");
+	private SimpleDateFormat _dateSpanishFormat = new SimpleDateFormat ("dd-MM-yyyy");
+	private SimpleDateFormat _dateSpanishFormat2 = new SimpleDateFormat ("dd/MM/yyyy hh24:mm:ss");
 	private SimpleDateFormat ISO8601DateFormat= new SimpleDateFormat ("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");	
 	
 	public Date get_CurrentDate(){
@@ -44,6 +45,14 @@ public class DateTools<T> {
 			return null;
 		}
 		return (T) (_dateSpanishFormat.format(date));
+	}
+	
+	public Date convertStringToDate(String date) throws ParseException {
+		return _dateSpanishFormat.parse(date);
+	}
+	
+	public Date convertStringToDate2(String date) throws ParseException {
+		return _dateSpanishFormat2.parse(date);
 	}
 	
 	public Date convertISO8601StringToDate(String date) throws ParseException {

@@ -24,9 +24,9 @@ import com.example.springsocial.tools.DateTools;
 import com.example.springsocial.tools.RestResponse;
 import com.example.springsocial.transaction.NoFolioTransaction;
 
-@SuppressWarnings({"rawtypes", "unchecked","unused"})
-@RestController
-@RequestMapping("Defunciones")
+//@SuppressWarnings({"rawtypes", "unchecked","unused"})
+//@RestController
+//@RequestMapping("Defunciones")
 public class NoFolioController <T> implements CrudController {
 
 	@Autowired
