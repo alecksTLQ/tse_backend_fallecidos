@@ -1,7 +1,9 @@
 package com.example.springsocial.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -10,8 +12,15 @@ import javax.persistence.*;
 @Table(name="TCABECERAFOLION")
 public class CabeceraFolioModelN implements Serializable{
 	
-	@EmbeddedId
-    private Idpaquete id;
+	@Id
+	@Column(name="ID")
+	private Long ID;
+	
+	@Column(name="IDPAQUETE") // no. folio
+	private	Long IDPAQUETE;
+	
+	@Column(name="AÑO")
+	private	Integer AÑOFOLIO;
 	
 	@Column(name="ORIGEN")
 	private Integer ORIGEN;
@@ -21,18 +30,12 @@ public class CabeceraFolioModelN implements Serializable{
 	
 	@Column(name="CODMUNIC")
 	private Integer CODMUNIC;
-	
-	@Column(name="FECHASISTE")
-	private Date FECSISTE;
 
-	@Column(name="USRACTUA")
+	@Column(name="USRCRE")
 	private String USRACTUA;
 	
-	@Column(name="VERIFICA")
-	private String VERIFICA;
-	
-	@Column(name="LINEA")
-	private Integer LINEA;
+	@Column(name="FECCRE")
+	private Date FECCRE;
 	
 	@Column(name="FECMOD")
 	private Date FECMOD;
@@ -40,17 +43,67 @@ public class CabeceraFolioModelN implements Serializable{
 	@Column(name="USRMOD")
 	private String USRMOD;
 	
+	@Column(name="LINEAFOLIO")
+	private Integer LINEAFOLIO;
 	
-	/*
-	 * @ManyToOne
-		@JoinColumn(name="depsolicitud", referencedColumnName="coddep", insertable=false, updatable=false)
-	    private DepartamentoVista departamentoSolicitud;
-	 * */
-
+	@Column(name="VERIFICA")
+	private String VERIFICA;
+	
+	@Column(name="FECHAENTREGA")
+	private Date FECHAENTREGA;
+	
+	
+	
 	public CabeceraFolioModelN() {
+	}	
+
+	public Long getID() {
+		return ID;
 	}
-	
-	
+
+	public void setID(Long iD) {
+		ID = iD;
+	}
+
+	public Long getIDPAQUETE() {
+		return IDPAQUETE;
+	}
+
+	public void setIDPAQUETE(Long iDPAQUETE) {
+		IDPAQUETE = iDPAQUETE;
+	}
+
+	public Date getFECHAENTREGA() {
+		return FECHAENTREGA;
+	}
+
+	public void setFECHAENTREGA(Date fECHAENTREGA) {
+		FECHAENTREGA = fECHAENTREGA;
+	}
+
+	public Integer getAÑOFOLIO() {
+		return AÑOFOLIO;
+	}
+
+	public void setAÑOFOLIO(Integer aÑOFOLIO) {
+		AÑOFOLIO = aÑOFOLIO;
+	}
+
+	public Date getFECCRE() {
+		return FECCRE;
+	}
+
+	public void setFECCRE(Date fECCRE) {
+		FECCRE = fECCRE;
+	}
+
+	public Integer getLINEAFOLIO() {
+		return LINEAFOLIO;
+	}
+
+	public void setLINEAFOLIO(Integer lINEAFOLIO) {
+		LINEAFOLIO = lINEAFOLIO;
+	}
 
 	public Date getFECMOD() {
 		return FECMOD;
@@ -66,22 +119,6 @@ public class CabeceraFolioModelN implements Serializable{
 
 	public void setUSRMOD(String uSRMOD) {
 		USRMOD = uSRMOD;
-	}
-
-	public Integer getLINEA() {
-		return LINEA;
-	}
-
-	public void setLINEA(Integer lINEA) {
-		LINEA = lINEA;
-	}
-
-	public Idpaquete getId() {
-		return id;
-	}
-
-	public void setId(Idpaquete id) {
-		this.id = id;
 	}
 
 	public Integer getORIGEN() {
@@ -106,14 +143,6 @@ public class CabeceraFolioModelN implements Serializable{
 
 	public void setCODMUNIC(Integer cODMUNIC) {
 		CODMUNIC = cODMUNIC;
-	}
-
-	public Date getFECSISTE() {
-		return FECSISTE;
-	}
-
-	public void setFECSISTE(Date fECSISTE) {
-		FECSISTE = fECSISTE;
 	}
 
 	public String getUSRACTUA() {

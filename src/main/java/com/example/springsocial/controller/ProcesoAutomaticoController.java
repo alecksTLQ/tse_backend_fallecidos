@@ -1,8 +1,11 @@
 package com.example.springsocial.controller;
 
+import java.util.List;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,8 +18,10 @@ import com.example.springsocial.crud.ObjectSetGet;
 import com.example.springsocial.error.CustomException;
 import com.example.springsocial.error.ErrorCode;
 import com.example.springsocial.generic.CrudController;
+import com.example.springsocial.model.DetalleFolioModelN;
 import com.example.springsocial.process.CaptacionFallecidoProcess;
 import com.example.springsocial.process.CaptacionFallecido_RenapDefuncionesProcess;
+import com.example.springsocial.quartz.PlayService;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 import com.example.springsocial.security.CurrentUser;
@@ -32,9 +37,16 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 	@PersistenceUnit
 	private EntityManagerFactory entityManagerFactory;
 	@Autowired
-	CabeceraFolioRepositoryN rpCabeceraFolio;
+	private CabeceraFolioRepositoryN rpCabeceraFolio;
 	@Autowired
-	DetalleFolioRepositoryN rpDetalleFolio;
+	private DetalleFolioRepositoryN rpDetalleFolio;
+	@Autowired
+	private PlayService serviceQuartz;
+	
+	private List<DetalleFolioModelN> listaDetalle;
+	
+	String authTokenHeader = null;
+	
 	
 	private CaptacionFallecido_RenapDefuncionesProcess captacionRenap = new CaptacionFallecido_RenapDefuncionesProcess();
 	
@@ -48,21 +60,45 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 	@PostMapping("obtenerRegistrosRenap")
 	public RestResponse obtenerRegistrosRenap(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestBody Object element) {
 
-		String authTokenHeader = request.getHeader("Authorization");
+		authTokenHeader = request.getHeader("Authorization");
 		try {
 			
 			data.setObject(element);
 			if (data.getValue("fecha")==null || data.getValue("fecha")=="" ) return new RestResponse(null,new CustomException("Ingrese la fecha",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
-			if (data.getValue("horainicio")==null || data.getValue("horainicio")=="" ) return new RestResponse(null,new CustomException("Ingrese la hora de inicio",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
-			if (data.getValue("horafinal")==null || data.getValue("horafinal")=="" ) return new RestResponse(null,new CustomException("Ingrese la hora final",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
+			serviceQuartz.setRepository(rpCabeceraFolio, rpDetalleFolio);
+			serviceQuartz.setData(element);
+			serviceQuartz.setToken(authTokenHeader);
+			serviceQuartz.setUserPrincipal(userPrincipal);
+			serviceQuartz.runTarea();
+				
+			if (serviceQuartz.getResponse().getError()!=null)throw new Exception(serviceQuartz.getResponse().getError().toString());
+			else {
+				response.setData(serviceQuartz.getResponse().getData());
+			}
 			
+		}catch (Exception exception) {
+			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);
+			response.setError(customExcepction);
+	    }
+		return response;
+	}
+	
+	@PostMapping("reporteVerificados")
+	public RestResponse ReporteVerificados(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestBody Object element) throws CustomException {
+		
+		authTokenHeader = request.getHeader("Authorization");
+		
+		try {
+			
+			data.setObject(element);
+			if (data.getValue("fecha")==null || data.getValue("fecha")=="" ) return new RestResponse(null,new CustomException("Ingrese la fecha",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			
 			captacionRenap.setEntityManagerFactory(entityManagerFactory);
 			captacionRenap.setUserPrincipal(userPrincipal);
 			captacionRenap.setToken(authTokenHeader);
 			captacionRenap.setData(element);
-				
-			captacionRenap.ObtenerRegistrosDefuncionesRenap();
+			captacionRenap.setRespository(rpCabeceraFolio, rpDetalleFolio);
+			captacionRenap.ObtenerDataVerificados();
 			
 			if (captacionRenap.getResponse().getError()!=null)throw new Exception(captacionRenap.getResponse().getError().toString());
 			else {
@@ -73,6 +109,7 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);
 			response.setError(customExcepction);
 	    }
+		
 		return response;
 	}
 	

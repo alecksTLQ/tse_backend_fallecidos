@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
@@ -17,15 +18,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * @author jorge
  *
  */
 public class DateTools<T> {
+	private Date myDate = new Date();
 	private SimpleDateFormat _dateTimeSpanishFormat = new SimpleDateFormat ("dd/MM/yyyy hh:mm:ss");
 	private SimpleDateFormat _dateSpanishFormat = new SimpleDateFormat ("dd-MM-yyyy");
 	private SimpleDateFormat _dateSpanishFormat2 = new SimpleDateFormat ("dd/MM/yyyy hh24:mm:ss");
-	private SimpleDateFormat ISO8601DateFormat= new SimpleDateFormat ("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");	
+	private SimpleDateFormat ISO8601DateFormat= new SimpleDateFormat ("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
 	
 	public Date get_CurrentDate(){
 		return new Date();
@@ -60,6 +64,79 @@ public class DateTools<T> {
         return ISO8601DateFormat.parse(date.toString().toUpperCase());
         
 	}
+	
+	public JSONObject getHoraActual() {
+		LocalDateTime locaDate = LocalDateTime.now();
+		JSONObject horas = new JSONObject();
+		Integer hora  = locaDate.getHour();
+		
+		horas.put("horaInicial",formatohora(hora));
+		horas.put("horaFinal", formatohora(hora+1));
+		
+		return horas;
+	}
+	
+	public String formatohora(Integer hora) {
+		String horaFormato = null;
+		if(hora>=10) {
+			horaFormato = ""+hora+":00:00";
+		}else {
+			horaFormato = "0"+hora+":00:00";
+		}
+		
+		return horaFormato;
+	}
+	
+	public Date restar() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(myDate);
+		calendar.add(Calendar.DAY_OF_YEAR, -1);
+		return calendar.getTime();
+	}
+	
+	public Date convertAndgetDate(String fecha){
+		JSONObject resultado = new JSONObject();		
+		 resultado = Id(fecha);
+		
+		 Calendar cal = Calendar.getInstance();
+		 cal.setTimeInMillis(0);
+		 cal.set(Integer.valueOf(resultado.get("ano").toString()),Integer.valueOf(resultado.get("mes").toString())-1 ,Integer.valueOf(resultado.get("dia").toString()), 0,0,0);
+		 Date date = cal.getTime(); // get back a Date object
+		 return date;
+	 }
+	
+	private JSONObject Id(String idpaquete) {		
+		String ano="", mes="", dia="";
+		JSONObject objfecha = new JSONObject();
+		//15/08/2018
+		char regla1 = '/';
+		char regla2 = '-';
+		for(int i=0;i<idpaquete.length();i++) {
+			
+			char c = idpaquete.charAt(i);
+			if(Character.compare(regla1, c)<0 || Character.compare(regla2, c)<0) {
+				if(i<2) {
+					dia = dia + c;
+				}
+				if(i>2 && i<5) {
+					mes = mes + c;
+				}
+				if(i>5) {
+					ano = ano + c;
+				}
+			}
+		}
+		
+		dia = dia.replaceFirst ("^0*", "");
+		mes = mes.replaceFirst("^0*", "");
+		ano = ano.replaceFirst("^0*", "");
+		
+		objfecha.put("dia",dia);
+		objfecha.put("mes", mes);
+		objfecha.put("ano", ano);		
+		return objfecha;
+	}
+	
 	public Date getLastDateOfMonth(Date date){
 		//return getLastDateOfMonth(new Date());
 		Calendar cal = Calendar.getInstance();

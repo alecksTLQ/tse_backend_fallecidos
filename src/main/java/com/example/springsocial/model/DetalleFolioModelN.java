@@ -11,16 +11,33 @@ import javax.persistence.*;
 @SequenceGenerator(name = "default_gen", sequenceName = "folio", allocationSize = 1)
 public class DetalleFolioModelN implements Serializable{
 	
-	@Id
-	@GeneratedValue(generator="default_gen")
-	@Column(name="ID")
-	private Integer ID;
 	
-	@Column(name="IDPAQUETE")
+	@GeneratedValue(generator="default_gen")
+	@Id
+	@Column(name="ID")
+	private Long ID;
+	
+	
+	@Column(name="IDCABECERA")
+	private Long IDCABECERA;
+	
+	/*@Column(name="IDPAQUETE")
 	private String IDPAQUETE;
 	
 	@Column(name="AÑOFOLIO")
-	private Integer AÑOFOLIO;
+	private Integer AÑOFOLIO;*/
+	
+	
+	/*@ManyToOne
+	@JoinColumns({
+    @JoinColumn(name="IDPAQUETE", referencedColumnName="IDPAQUETE",insertable=false, updatable=false),
+    @JoinColumn(name="AÑOFOLIO", referencedColumnName="AÑO", insertable=false, updatable=false),
+	})
+	private CabeceraFolioModelN IDPAQUETEN;*/
+	
+	@ManyToOne
+	@JoinColumn(name="IDCABECERA", referencedColumnName="ID",insertable=false, updatable=false)
+	private CabeceraFolioModelN IDCABECERAN;
 	
 	@Column(name="NROLINEA")
 	private Integer NROLINEA;
@@ -57,9 +74,9 @@ public class DetalleFolioModelN implements Serializable{
 	private Integer NROBOLETA;
 	@Column(name="FECHANACI")
 	private Date FECHANACI;
-	@Column(name="FECHAOPERA")
-	private Date FECHAOPERA;
-	@Column(name="USRDIGITA")
+	@Column(name="FECCRE")
+	private Date FECCRE;
+	@Column(name="USRCRE")
 	private String USRDIGITA;
 	@Column(name="USRVERIFI")
 	private String USRVERIFI;
@@ -71,12 +88,56 @@ public class DetalleFolioModelN implements Serializable{
 	private Date FECMOD;
 	@Column(name="USRMOD")
 	private String USRMOD;
+	@Column(name="ESTADODIFERENCIA")
+	private Integer ESTADODIFERENCIA;
 	
 	
 	public DetalleFolioModelN() {
 	}
 	
 	
+	
+	public Long getID() {
+		return ID;
+	}
+
+	public void setID(Long iD) {
+		ID = iD;
+	}
+
+	public Long getIDCABECERA() {
+		return IDCABECERA;
+	}
+
+	public void setIDCABECERA(Long iDCABECERA) {
+		IDCABECERA = iDCABECERA;
+	}
+
+	public CabeceraFolioModelN getIDCABECERAN() {
+		return IDCABECERAN;
+	}
+
+	public void setIDCABECERAN(CabeceraFolioModelN iDCABECERAN) {
+		IDCABECERAN = iDCABECERAN;
+	}
+
+	public Date getFECCRE() {
+		return FECCRE;
+	}
+
+	public void setFECCRE(Date fECCRE) {
+		FECCRE = fECCRE;
+	}
+	
+
+	public Integer getESTADODIFERENCIA() {
+		return ESTADODIFERENCIA;
+	}
+
+	public void setESTADODIFERENCIA(Integer eSTADODIFERENCIA) {
+		ESTADODIFERENCIA = eSTADODIFERENCIA;
+	}
+
 	public Date getFECMOD() {
 		return FECMOD;
 	}
@@ -99,30 +160,6 @@ public class DetalleFolioModelN implements Serializable{
 
 	public void setNROLINEA(Integer nROLINEA) {
 		NROLINEA = nROLINEA;
-	}
-
-	public Integer getID() {
-		return ID;
-	}
-
-	public void setID(Integer iD) {
-		ID = iD;
-	}
-
-	public String getIDPAQUETE() {
-		return IDPAQUETE;
-	}
-
-	public void setIDPAQUETE(String iDPAQUETE) {
-		IDPAQUETE = iDPAQUETE;
-	}
-
-	public Integer getAÑOFOLIO() {
-		return AÑOFOLIO;
-	}
-
-	public void setAÑOFOLIO(Integer aÑOFOLIO) {
-		AÑOFOLIO = aÑOFOLIO;
 	}
 
 	public String getAPE1FALLE() {
@@ -221,12 +258,7 @@ public class DetalleFolioModelN implements Serializable{
 	public void setFECHANACI(Date fECHANACI) {
 		FECHANACI = fECHANACI;
 	}
-	public Date getFECHAOPERA() {
-		return FECHAOPERA;
-	}
-	public void setFECHAOPERA(Date fECHAOPERA) {
-		FECHAOPERA = fECHAOPERA;
-	}
+	
 	public String getUSRDIGITA() {
 		return USRDIGITA;
 	}
