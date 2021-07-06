@@ -9,7 +9,7 @@ import javax.persistence.*;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="TCABECERAFOLION")
+@Table(name="TCABECERAFOLIO_N")
 public class CabeceraFolioModelN implements Serializable{
 	
 	@Id

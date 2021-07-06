@@ -3,45 +3,26 @@ package com.example.springsocial.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="TDETALLEFOLIO_N")
-@SequenceGenerator(name = "default_gen", sequenceName = "folio", allocationSize = 1)
-public class DetalleFolioModelN implements Serializable{
-	
-	
-	@GeneratedValue(generator="default_gen")
+@Table(name="TDETALLEFOLIOH_N")
+public class DetalleFolioHistoricoModelN implements Serializable{
+
 	@Id
 	@Column(name="ID")
 	private Long ID;
 	
-	
 	@Column(name="IDCABECERA")
 	private Long IDCABECERA;
-	
-	/*@Column(name="IDPAQUETE")
-	private String IDPAQUETE;
-	
-	@Column(name="AÑOFOLIO")
-	private Integer AÑOFOLIO;*/
-	
-	
-	/*@ManyToOne
-	@JoinColumns({
-    @JoinColumn(name="IDPAQUETE", referencedColumnName="IDPAQUETE",insertable=false, updatable=false),
-    @JoinColumn(name="AÑOFOLIO", referencedColumnName="AÑO", insertable=false, updatable=false),
-	})
-	private CabeceraFolioModelN IDPAQUETEN;*/
-	
-	@ManyToOne
-	@JoinColumn(name="IDCABECERA", referencedColumnName="ID",insertable=false, updatable=false)
-	private CabeceraFolioModelN IDCABECERAN;
-	
+	@Column(name="AÑO")
+	private Integer AÑO;
 	@Column(name="NROLINEA")
 	private Integer NROLINEA;
-	
 	@Column(name="APE1FALLE")
 	private String APE1FALLE;
 	@Column(name="APE2FALLE")
@@ -77,91 +58,60 @@ public class DetalleFolioModelN implements Serializable{
 	@Column(name="FECCRE")
 	private Date FECCRE;
 	@Column(name="USRCRE")
-	private String USRDIGITA;
+	private String USRCRE;
 	@Column(name="USRVERIFI")
 	private String USRVERIFI;
-	@Column(name="ESTATUS")
-	private String ESTATUS;
-	@Column(name="CUI")
-	private Long CUI;
 	@Column(name="FECMOD")
 	private Date FECMOD;
 	@Column(name="USRMOD")
 	private String USRMOD;
-	@Column(name="ESTADODIFERENCIA")
-	private Integer ESTADODIFERENCIA;
+	@Column(name="ESTATUS")
+	private String ESTATUS;
+	@Column(name="ESTATUSF")
+	private Integer ESTATUSF;
+	@Column(name="DEPTOINS")
+	private Integer DEPTOINS;
+	@Column(name="MUNICINS")
+	private Integer MUNICINS;
+	@Column(name="DEPTOEXT")
+	private Integer DEPTOEXT;
+	@Column(name="MUNICEXT")
+	private Integer MUNICEXT;
+	@Column(name="CUI")
+	private Long CUI;
 	
 	
-	public DetalleFolioModelN() {
+	
+	
+	
+	public DetalleFolioHistoricoModelN() {
 	}
-	
 	
 	
 	public Long getID() {
 		return ID;
 	}
-
 	public void setID(Long iD) {
 		ID = iD;
 	}
-
 	public Long getIDCABECERA() {
 		return IDCABECERA;
 	}
-
 	public void setIDCABECERA(Long iDCABECERA) {
 		IDCABECERA = iDCABECERA;
 	}
-
-	public CabeceraFolioModelN getIDCABECERAN() {
-		return IDCABECERAN;
+	public Integer getAÑO() {
+		return AÑO;
 	}
-
-	public void setIDCABECERAN(CabeceraFolioModelN iDCABECERAN) {
-		IDCABECERAN = iDCABECERAN;
+	public void setAÑO(Integer aÑO) {
+		AÑO = aÑO;
 	}
-
-	public Date getFECCRE() {
-		return FECCRE;
-	}
-
-	public void setFECCRE(Date fECCRE) {
-		FECCRE = fECCRE;
-	}
-	
-
-	public Integer getESTADODIFERENCIA() {
-		return ESTADODIFERENCIA;
-	}
-
-	public void setESTADODIFERENCIA(Integer eSTADODIFERENCIA) {
-		ESTADODIFERENCIA = eSTADODIFERENCIA;
-	}
-
-	public Date getFECMOD() {
-		return FECMOD;
-	}
-
-	public void setFECMOD(Date fECMOD) {
-		FECMOD = fECMOD;
-	}
-
-	public String getUSRMOD() {
-		return USRMOD;
-	}
-
-	public void setUSRMOD(String uSRMOD) {
-		USRMOD = uSRMOD;
-	}
-
 	public Integer getNROLINEA() {
 		return NROLINEA;
 	}
-
 	public void setNROLINEA(Integer nROLINEA) {
 		NROLINEA = nROLINEA;
 	}
-
 	public String getAPE1FALLE() {
 		return APE1FALLE;
 	}
@@ -258,12 +208,17 @@ public class DetalleFolioModelN implements Serializable{
 	public void setFECHANACI(Date fECHANACI) {
 		FECHANACI = fECHANACI;
 	}
-	
-	public String getUSRDIGITA() {
-		return USRDIGITA;
+	public Date getFECCRE() {
+		return FECCRE;
 	}
-	public void setUSRDIGITA(String uSRDIGITA) {
-		USRDIGITA = uSRDIGITA;
+	public void setFECCRE(Date fECCRE) {
+		FECCRE = fECCRE;
+	}
+	public String getUSRCRE() {
+		return USRCRE;
+	}
+	public void setUSRCRE(String uSRCRE) {
+		USRCRE = uSRCRE;
 	}
 	public String getUSRVERIFI() {
 		return USRVERIFI;
@@ -271,11 +226,53 @@ public class DetalleFolioModelN implements Serializable{
 	public void setUSRVERIFI(String uSRVERIFI) {
 		USRVERIFI = uSRVERIFI;
 	}
+	public Date getFECMOD() {
+		return FECMOD;
+	}
+	public void setFECMOD(Date fECMOD) {
+		FECMOD = fECMOD;
+	}
+	public String getUSRMOD() {
+		return USRMOD;
+	}
+	public void setUSRMOD(String uSRMOD) {
+		USRMOD = uSRMOD;
+	}
 	public String getESTATUS() {
 		return ESTATUS;
 	}
 	public void setESTATUS(String eSTATUS) {
 		ESTATUS = eSTATUS;
+	}
+	public Integer getESTATUSF() {
+		return ESTATUSF;
+	}
+	public void setESTATUSF(Integer eSTATUSF) {
+		ESTATUSF = eSTATUSF;
+	}
+	public Integer getDEPTOINS() {
+		return DEPTOINS;
+	}
+	public void setDEPTOINS(Integer dEPTOINS) {
+		DEPTOINS = dEPTOINS;
+	}
+	public Integer getMUNICINS() {
+		return MUNICINS;
+	}
+	public void setMUNICINS(Integer mUNICINS) {
+		MUNICINS = mUNICINS;
+	}
+	public Integer getDEPTOEXT() {
+		return DEPTOEXT;
+	}
+	public void setDEPTOEXT(Integer dEPTOEXT) {
+		DEPTOEXT = dEPTOEXT;
+	}
+	public Integer getMUNICEXT() {
+		return MUNICEXT;
+	}
+	public void setMUNICEXT(Integer mUNICEXT) {
+		MUNICEXT = mUNICEXT;
 	}
 	public Long getCUI() {
 		return CUI;
@@ -283,6 +280,7 @@ public class DetalleFolioModelN implements Serializable{
 	public void setCUI(Long cUI) {
 		CUI = cUI;
 	}
-
-
+	
+	
 }
+

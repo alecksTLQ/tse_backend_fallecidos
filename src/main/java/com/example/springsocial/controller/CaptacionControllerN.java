@@ -208,9 +208,9 @@ public class CaptacionControllerN <T> implements CrudController{
 			
 			data.setObject(element);
 			if (data.getValue("nroboleta")==null || data.getValue("nroboleta")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Boleta",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
-			if (data.getValue("nroorden")==null || data.getValue("nroorden")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Orden",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
-			if (data.getValue("nroregistro")==null || data.getValue("nroregistro")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Registro",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
-			if (data.getValue("cui")==null || data.getValue("cui")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de CUI",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
+			if (data.getValue("orden")==null || data.getValue("orden")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Orden",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
+			if (data.getValue("registro")==null || data.getValue("registro")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Registro",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
+			if (data.getValue("dpi")==null || data.getValue("dpi")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de CUI",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			if (data.getValue("iddetalle")==null || data.getValue("iddetalle")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Folio",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 
 			captacion.setEntityManagerFactory(entityManagerFactory);

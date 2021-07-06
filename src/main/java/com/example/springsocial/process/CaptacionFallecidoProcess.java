@@ -11,11 +11,16 @@ import javax.persistence.PersistenceUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.example.springsocial.api.ApiRenapImages;
+import com.example.springsocial.api.ApiTPadron;
+import com.example.springsocial.api.ApiUpdateTPadron;
 import com.example.springsocial.crud.ModelSetGetTransaction;
 import com.example.springsocial.crud.ObjectSetGet;
 import com.example.springsocial.error.CustomException;
 import com.example.springsocial.model.CabeceraFolioModelN;
+import com.example.springsocial.model.DetalleFolioHistoricoModelN;
 import com.example.springsocial.model.DetalleFolioModelN;
 import com.example.springsocial.model.Idpaquete;
 import com.example.springsocial.model.IdpaqueteDetalle;
@@ -47,14 +52,20 @@ public class CaptacionFallecidoProcess {
 	private ObjectSetGet responseApi= new ObjectSetGet();
 	//MODELOS
 	private DetalleFolioModelN mdlDetalle;
+	private DetalleFolioHistoricoModelN mdlDetalleHistorico;
 	private CabeceraFolioModelN mdlCabecera;
 	private List<CabeceraFolioModelN> listCabecera;
 	private List<DetalleFolioModelN> listaDetalle;
+	private DetalleFolioModelN modelo = null;
 	private Idpaquete mdlId;
 	//VARIABLES
 	private String nrofolio, token, dpipicture, fingerprint, rubric;
+	private Integer EstadoFallecido = 0;
 	//APIS
 	private ApiRenapImages images = new ApiRenapImages();
+	private ApiTPadron tpadron = new ApiTPadron();
+	private ApiUpdateTPadron updatePadron = new ApiUpdateTPadron();
+	private JSONObject arrayBoleta, arrayDpi, arrayCedula = null;
 	
 	public RestResponse getResponse() {return this.response; }
 	public void setData(Object createElement) {data.setObject(createElement);}
@@ -130,7 +141,7 @@ public class CaptacionFallecidoProcess {
 		modelTransaction.setType(CabeceraFolioModelN.class);
 		searchCriteriaTools.clear();
 		searchCriteriaTools.addIgualAnd("IDPAQUETE", nrofolio); //no. folio
-		searchCriteriaTools.addIgualAnd("AÑOFOLIO", año.toString()); 
+		searchCriteriaTools.addIgualAnd("AÑOFOLIO", año.toString());
 		
 		modelTransaction.setSearchCriteriaTools(searchCriteriaTools);
 		modelTransaction.getValue();
@@ -284,7 +295,7 @@ public class CaptacionFallecidoProcess {
 	//METODO DE VERIFICACION
 	private void updateDetalleFolio() throws NumberFormatException, Exception {
 		this.mdlDetalle = new DetalleFolioModelN();
-		DetalleFolioModelN modelo = new DetalleFolioModelN();
+		modelo = new DetalleFolioModelN();
 		try {
 			modelo = obtenerinformacionfallecido(Long.valueOf(data.getValue("iddetalle").toString()));
 			mdlDetalle.setID(Long.valueOf(data.getValue("iddetalle").toString()));
@@ -334,19 +345,190 @@ public class CaptacionFallecidoProcess {
 		return modelo;
 	}
 	
-	private void consultaTpadron() throws Exception {
-		this.images.clearParms();
-		this.images.setAuthorizationHeader(this.token);
-		this.images.setGetPath("2689143621004");
-		this.images.sendGet();
-		
-		if(images.getRestResponse().getData()!=null) {
-			this.responseApi.setObject(images.getRestResponse().getData());
-			this.dpipicture = responseApi.getValue("fotoCiudadano").toString();
-			this.fingerprint = responseApi.getValue("huellaCiudadano").toString();
-			this.rubric = responseApi.getValue("firmaCiudadano").toString();
+	
+	private void consultaNroBoleta() {
+		try {
+			if(Integer.valueOf(data.getValue("nroboleta").toString())>0) {
+				this.tpadron.clearParms();
+				this.tpadron.setGetPath();
+				this.tpadron.addParam("criterio","1");
+				this.tpadron.addParam("nroboleta", data.getValue("nroboleta").toString());
+				this.tpadron.setAuthorizationHeader(this.token);
+				this.tpadron.sendPost();
+				if(tpadron.getRestResponse().getData()!=null) {
+					arrayBoleta = (JSONObject) tpadron.getRestResponse().getData();
+				}
+			}
 			
-			System.out.println(dpipicture);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void consultaDpi() {
+		try {	
+			this.tpadron.clearParms();
+			this.tpadron.setGetPath();
+			this.tpadron.addParam("criterio", "2");
+			this.tpadron.addParam("dpi",data.getValue("dpi").toString());
+			this.tpadron.setAuthorizationHeader(this.token);
+			this.tpadron.sendPost();
+			if(tpadron.getRestResponse().getData()!=null) {
+				arrayDpi = (JSONObject) tpadron.getRestResponse().getData();
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void consultaCedula() {
+		try {
+			this.tpadron.clearParms();
+			this.tpadron.setGetPath();
+			this.tpadron.addParam("criterio", "3");
+			this.tpadron.addParam("registro", data.getValue("registro").toString());
+			this.tpadron.addParam("orden", data.getValue("orden").toString());
+			this.tpadron.setAuthorizationHeader(this.token);
+			this.tpadron.sendPost();
+			if(this.tpadron.getRestResponse().getData()!=null) {
+				arrayCedula = (JSONObject) this.tpadron.getRestResponse().getData();
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void updateTPadron() {
+		try {
+			this.updatePadron.clearParms();
+			this.updatePadron.setGetPath();
+			this.updatePadron.addParam("nroboleta", data.getValue("nroboleta").toString());
+			this.updatePadron.setAuthorizationHeader(this.token);
+			this.updatePadron.sendPost();
+			if(this.updatePadron.getRestResponse().getData()!=null) {
+				response.setData(this.updatePadron.getRestResponse().getData());
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void consultaPadron() throws Exception {
+		try{
+			
+			if(arrayBoleta==null) {
+				consultaDpi();
+				if(arrayDpi==null) {
+					consultaCedula();
+					if(arrayCedula==null) {
+						
+					}else {
+						proceso(arrayCedula,2);
+					}
+				}else {
+					proceso(arrayDpi,2);
+				}
+			}else {
+				proceso(arrayBoleta,1);
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void Historico(JSONObject datos) {
+		this.mdlDetalleHistorico = new DetalleFolioHistoricoModelN();
+		mdlDetalleHistorico.setID(modelo.getID());
+		mdlDetalleHistorico.setIDCABECERA(modelo.getIDCABECERA());
+		mdlDetalleHistorico.setAÑO(dateTools.getYearOfCurrentDate());
+		mdlDetalleHistorico.setNROLINEA(modelo.getNROLINEA());
+		mdlDetalleHistorico.setAPE1FALLE(modelo.getAPE1FALLE());
+		mdlDetalleHistorico.setAPE2FALLE(modelo.getAPE2FALLE());
+		mdlDetalleHistorico.setAPE3FALLE(modelo.getAPE3FALLE());
+		mdlDetalleHistorico.setNOM1FALLE(modelo.getNOM1FALLE());
+		mdlDetalleHistorico.setNOM2FALLE(modelo.getNOM2FALLE());
+		mdlDetalleHistorico.setAPE1PADRE(modelo.getAPE1PADRE());
+		mdlDetalleHistorico.setAPE2PADRE(modelo.getAPE2PADRE());
+		mdlDetalleHistorico.setNOMPADRE(modelo.getNOMPADRE());
+		mdlDetalleHistorico.setAPE1MADRE(modelo.getAPE1MADRE());
+		mdlDetalleHistorico.setAPE2MADRE(modelo.getAPE2MADRE());
+		mdlDetalleHistorico.setNOMMADRE(modelo.getNOMMADRE());
+		mdlDetalleHistorico.setFECHADEFU(modelo.getFECHADEFU());
+		mdlDetalleHistorico.setNROORDEN(modelo.getNROORDEN());
+		mdlDetalleHistorico.setNROREGIST(modelo.getNROREGIST());
+		mdlDetalleHistorico.setNROBOLETA(modelo.getNROBOLETA());
+		mdlDetalleHistorico.setFECHANACI(modelo.getFECHANACI());
+		mdlDetalleHistorico.setFECCRE(modelo.getFECCRE());
+		mdlDetalleHistorico.setUSRCRE(modelo.getUSRDIGITA());
+		mdlDetalleHistorico.setUSRVERIFI(modelo.getUSRVERIFI());
+		mdlDetalleHistorico.setFECMOD(modelo.getFECMOD());
+		mdlDetalleHistorico.setUSRMOD(modelo.getUSRMOD());
+		mdlDetalleHistorico.setESTATUS(modelo.getESTATUS());
+		mdlDetalleHistorico.setESTATUSF(EstadoFallecido);
+		mdlDetalleHistorico.setDEPTOINS(datos.getInteger("depEmpadronamiento"));
+		mdlDetalleHistorico.setMUNICINS(datos.getInteger("munEmpadronamiento"));
+		mdlDetalleHistorico.setDEPTOEXT(datos.getInteger("depNacimiento"));
+		mdlDetalleHistorico.setMUNICEXT(datos.getInteger("munNacimiento"));
+		mdlDetalleHistorico.setCUI(modelo.getCUI());
+		
+		modelTransaction.saveWithFlush(mdlDetalleHistorico);
+	}
+	
+	private void proceso(JSONObject datos, Integer opcion) {
+		Long boletae = null, boletac=null;
+		
+		
+		switch(opcion) {
+		case 1:
+			boletae = datos.getLong("nroBoleta");
+			boletac = Long.valueOf(modelo.getNROBOLETA().toString());
+			if(datos.getInteger("statusPadron")>=0 && datos.getInteger("statusPadron")<=17) {
+				
+				if(boletae.toString().equals(boletac.toString()) && datos.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  datos.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && datos.getString("primerApellido").equals(modelo.getAPE1FALLE()) && datos.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && datos.getString("tercerApellido").equals(modelo.getAPE3FALLE())   ) {
+					
+					//ACTUALIZAR EL STATUS EN TPADRON
+					if(datos.getInteger("statusPadron")!=0) {
+						updateTPadron();
+					}
+					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
+					EstadoFallecido = 8;
+					//ACTUALIZA CABECERA, ELIMINA HISTORICO EN CASO DE EXISTIR Y VUELVE A REALIZAR INSERCION A HISTORICO
+					Historico(datos); 
+					//DELETE TDETALLEFOLION
+					
+				}else {
+					System.out.println(datos.getInteger("nroBoleta")+" "+datos.getString("primerNombre"));
+				}
+			}
+		break;
+		case 2:
+			
+			System.out.println(modelo.getFECHANACI());
+			String fechanacimientoAPI = Id(datos.get("fechaNacimiento").toString());
+			String fechanacimientoBD = Id(modelo.getFECHANACI().toString());
+			if(datos.getInteger("statusPadron")>=0 && datos.getInteger("statusPadron")<=17) {
+				
+				if(fechanacimientoAPI.equals(fechanacimientoBD) &&  datos.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  datos.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && datos.getString("primerApellido").equals(modelo.getAPE1FALLE()) && datos.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && datos.getString("tercerApellido").equals(modelo.getAPE3FALLE())   ) {
+					
+					//ACTUALIZAR EL STATUS EN TPADRON
+					if(datos.getInteger("statusPadron")!=0) {
+						updateTPadron();
+					}
+					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
+					EstadoFallecido = 8;
+					//ACTUALIZA CABECERA, ELIMINA HISTORICO EN CASO DE EXISTIR Y VUELVE A REALIZAR INSERCION A HISTORICO
+					Historico(datos); 
+					//DELETE TDETALLEFOLION
+					
+				}else {
+					System.out.println(datos.getInteger("nroBoleta")+" "+datos.getString("primerNombre"));
+				}
+			}
+		break;
+		default:
 		}
 	}
 	
@@ -354,7 +536,9 @@ public class CaptacionFallecidoProcess {
 	private void confirmTransactionAndSetResult() {
 		transaction.commit();
 	}
+
 	
+	/* METODOS DEL CONTROLLER */
 	
 	public Integer save() throws CustomException {
 		Integer indicador = 0;
@@ -373,6 +557,7 @@ public class CaptacionFallecidoProcess {
 		return indicador;
 	}
 	
+	
 	public void select() throws CustomException {
 	
 		try {
@@ -386,6 +571,7 @@ public class CaptacionFallecidoProcess {
     	}
 		
 	}
+	
 	
 	public void update() {
 		try {
@@ -401,11 +587,15 @@ public class CaptacionFallecidoProcess {
     	}
 	}
 
+
+	
 	public void VerificacionyActualizarPadron() {
 		try {
 			startTransaction();
 			updateDetalleFolio();
-			consultaTpadron(); //MATA A LA PERSONA = ACTUALIZA EN EL PADRON A LA PERSONA EN SU ESTADO A FALLECIDO = 0
+			consultaNroBoleta();
+			
+			consultaPadron();
 			confirmTransactionAndSetResult();
 		}catch(Exception exception) {
 			transaction.rollback();
@@ -413,5 +603,25 @@ public class CaptacionFallecidoProcess {
 		}finally{
     		if (entityManager.isOpen())	entityManager.close();
     	}
+	}
+	
+	
+	private String Id(String idpaquete) {
+		String Id = "", fecha = "", hora = "";
+		char regla1 = 'T';
+		char regla2 = ':';
+		char regla3 = '.';
+		for(int i=0;i<idpaquete.length();i++) {
+			
+			char c = idpaquete.charAt(i);
+			if(i<10) {
+				fecha = fecha + c;
+			}
+			if(i>10 && i<19) {
+				hora = hora + c;
+			}
+		}
+		
+		return Id = fecha;
 	}
 }

@@ -18,15 +18,15 @@ public interface CabeceraFolioRepositoryN extends
 CrudRepository<CabeceraFolioModelN, Long>,
 JpaRepository<CabeceraFolioModelN, Long>
 {
-	@Query(value="SELECT MAX(ID) FROM TCABECERAFOLION", nativeQuery= true)
+	@Query(value="SELECT MAX(ID) FROM TCABECERAFOLIO_N", nativeQuery= true)
 	Long selectMaxID();
 	
-	@Query(value="SELECT MAX(IDPAQUETE) FROM TCABECERAFOLION WHERE ORIGEN = 2", nativeQuery= true)
+	@Query(value="SELECT MAX(IDPAQUETE) FROM TCABECERAFOLIO_N WHERE ORIGEN = 2", nativeQuery= true)
 	Long selectMaxFolio();
 	
 	// DEVUELVE LOS FOLIOS Y LINEAS DE CADA FOLIO
 	@Query(value=	"SELECT DISTINCT * FROM "
-				+ 	"TCABECERAFOLION WHERE TO_DATE(FECCRE)=TO_DATE(:fecha,'DD/MM/YYYY')", nativeQuery=true)
+				+ 	"TCABECERAFOLIO_N WHERE TO_DATE(FECCRE)=TO_DATE(:fecha,'DD/MM/YYYY')", nativeQuery=true)
 	List<CabeceraFolioModelN> selectFolioAndLineas(@Param("fecha") String fecha);
 	
 }
