@@ -143,31 +143,6 @@ public class CaptacionControllerN <T> implements CrudController{
 		return response;
 	}
 	
-	@GetMapping("lista")
-	public RestResponse lista(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestParam("searchCriteria") Optional<String> searchCriteria,@RequestParam Optional<String> orderCriteria) {
-		init();
-		String authTokenHeader = request.getHeader("Authorization");
-		ObjectSetGet data= new ObjectSetGet();
-		
-		System.out.println(userPrincipal.getCode());
-		try {
-			
-			//response.setData(rpDetalleFolio.findAll());
-			crud.setRequest(request);
-			crud.setUserPrincipal(userPrincipal);
-			searchCriteriaTools.clear();
-			searchCriteriaTools.setSearchCriteria(searchCriteria);
-			crud.list(searchCriteriaTools.getSearchCriteria() , orderCriteria);
-			
-			response.setData(crud.getResponse());
-			
-		}catch(Exception e) {
-			response.setError(e.getMessage());
-		}
-		
-		return response;
-	}
-	
 	@PreAuthorize("hasRole('USER')")
 	@PutMapping("modificarFallecido")
 	public RestResponse modificar(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) {
@@ -199,8 +174,8 @@ public class CaptacionControllerN <T> implements CrudController{
 	
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("verificarFallecido")
-	public RestResponse verificarFallecidos(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) {
-		
+	public RestResponse verificarFallecidos(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) throws CustomException {
+		Integer valor = null;
 		String authTokenHeader = request.getHeader("Authorization");
 		ObjectSetGet data= new ObjectSetGet();
 		
@@ -213,22 +188,21 @@ public class CaptacionControllerN <T> implements CrudController{
 			if (data.getValue("dpi")==null || data.getValue("dpi")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de CUI",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			if (data.getValue("iddetalle")==null || data.getValue("iddetalle")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Folio",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 
+			captacion.setRepository(rpDetalleFolio,rpCabeceraFolio);
 			captacion.setEntityManagerFactory(entityManagerFactory);
 			captacion.setUserPrincipal(userPrincipal);
 			captacion.setData(element);
 			captacion.setToken(authTokenHeader);
-			captacion.VerificacionyActualizarPadron();
+			valor = captacion.VerificacionyActualizarPadron();
 			
 			if (captacion.getResponse().getError()!=null)throw new Exception(captacion.getResponse().getError().toString());
 			else {
-				response.setData("VERIFICACION Y ACTUALIZACION DE ESTADO EN EL PADRON CORRECTA!");
+				if(valor==0) {
+					response.setData("VERIFICACION, ALMACENADO EN HISTORICO Y ACTUALIZACION DE ESTADO EN EL PADRON CORRECTA!");
+				}else {
+					response.setData("VERIFICACION Y ALMACENADO EN HISTORICO CORRECTO!");
+				}
 			}
-			
-			// SELECT * FROM TPADRON WHERE NROBOLETA =?
-			// SELECT c.* , p.* from TCEDULA c, TPADRON p where c.nroboleta = p.nroboleta and c.ordenced = ? and c.registroced =?
-			// SELECT d.* , p.* from TDPI d, TPADRON p where d.nroboleta = p.nroboleta and d.cui = ?			
-			// UPDATE TPADRON SET status = ? , USRMOD =? , FECMOD = ? , IDPRO = 27, FECPRO = SYSDATE, PUESTOMODIFICA = 119 WHERE NROBOLETA = ?
-			
 			
 		}catch (Exception exception) {
 			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);

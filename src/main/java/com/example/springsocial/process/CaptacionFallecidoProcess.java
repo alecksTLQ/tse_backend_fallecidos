@@ -52,20 +52,22 @@ public class CaptacionFallecidoProcess {
 	private ObjectSetGet responseApi= new ObjectSetGet();
 	//MODELOS
 	private DetalleFolioModelN mdlDetalle;
-	private DetalleFolioHistoricoModelN mdlDetalleHistorico;
+	private DetalleFolioHistoricoModelN mdlDetalleHistorico = null, mdlHistorico = null;
 	private CabeceraFolioModelN mdlCabecera;
 	private List<CabeceraFolioModelN> listCabecera;
 	private List<DetalleFolioModelN> listaDetalle;
 	private DetalleFolioModelN modelo = null;
 	private Idpaquete mdlId;
 	//VARIABLES
-	private String nrofolio, token, dpipicture, fingerprint, rubric;
+	private String nrofolio, token, dpipicture, fingerprint, rubric, fechanacimientoAPI="", fechanacimientoBD="";
 	private Integer EstadoFallecido = 0;
+	private Boolean Misma_Boleta_Diferente_Nombre = false, EncontroCoincidencia = false;
 	//APIS
 	private ApiRenapImages images = new ApiRenapImages();
 	private ApiTPadron tpadron = new ApiTPadron();
 	private ApiUpdateTPadron updatePadron = new ApiUpdateTPadron();
-	private JSONObject arrayBoleta, arrayDpi, arrayCedula = null;
+	private JSONObject arrayBoleta, arrayDpi;
+	private JSONArray arrayCedula = null;
 	
 	public RestResponse getResponse() {return this.response; }
 	public void setData(Object createElement) {data.setObject(createElement);}
@@ -345,7 +347,6 @@ public class CaptacionFallecidoProcess {
 		return modelo;
 	}
 	
-	
 	private void consultaNroBoleta() {
 		try {
 			if(Integer.valueOf(data.getValue("nroboleta").toString())>0) {
@@ -367,14 +368,18 @@ public class CaptacionFallecidoProcess {
 	
 	private void consultaDpi() {
 		try {	
-			this.tpadron.clearParms();
-			this.tpadron.setGetPath();
-			this.tpadron.addParam("criterio", "2");
-			this.tpadron.addParam("dpi",data.getValue("dpi").toString());
-			this.tpadron.setAuthorizationHeader(this.token);
-			this.tpadron.sendPost();
-			if(tpadron.getRestResponse().getData()!=null) {
-				arrayDpi = (JSONObject) tpadron.getRestResponse().getData();
+			if(data.getValue("dpi")!=null && data.getValue("dpi")!="") {
+				if(Long.valueOf(data.getValue("dpi").toString())>0l) {
+					this.tpadron.clearParms();
+					this.tpadron.setGetPath();
+					this.tpadron.addParam("criterio", "2");
+					this.tpadron.addParam("dpi",data.getValue("dpi").toString());
+					this.tpadron.setAuthorizationHeader(this.token);
+					this.tpadron.sendPost();
+					if(tpadron.getRestResponse().getData()!=null) {
+						arrayDpi = (JSONObject) tpadron.getRestResponse().getData();
+					}
+				}
 			}
 			
 		}catch(Exception e) {
@@ -384,15 +389,18 @@ public class CaptacionFallecidoProcess {
 	
 	private void consultaCedula() {
 		try {
-			this.tpadron.clearParms();
-			this.tpadron.setGetPath();
-			this.tpadron.addParam("criterio", "3");
-			this.tpadron.addParam("registro", data.getValue("registro").toString());
-			this.tpadron.addParam("orden", data.getValue("orden").toString());
-			this.tpadron.setAuthorizationHeader(this.token);
-			this.tpadron.sendPost();
-			if(this.tpadron.getRestResponse().getData()!=null) {
-				arrayCedula = (JSONObject) this.tpadron.getRestResponse().getData();
+			
+			if(data.getValue("registro")!=null && data.getValue("registro")!="" && data.getValue("orden")!=null && data.getValue("orden")!=""){
+				this.tpadron.clearParms();
+				this.tpadron.setGetPath();
+				this.tpadron.addParam("criterio", "3");
+				this.tpadron.addParam("registro", data.getValue("registro").toString());
+				this.tpadron.addParam("orden", data.getValue("orden").toString());
+				this.tpadron.setAuthorizationHeader(this.token);
+				this.tpadron.sendPost();
+				if(this.tpadron.getRestResponse().getData()!=null ) {
+					arrayCedula = (JSONArray) this.tpadron.getRestResponse().getData();
+				}
 			}
 			
 		}catch(Exception e) {
@@ -400,11 +408,11 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
-	private void updateTPadron() {
+	private void updateTPadron(JSONObject datos) {
 		try {
 			this.updatePadron.clearParms();
 			this.updatePadron.setGetPath();
-			this.updatePadron.addParam("nroboleta", data.getValue("nroboleta").toString());
+			this.updatePadron.addParam("nroboleta", datos.get("nroBoleta").toString());
 			this.updatePadron.setAuthorizationHeader(this.token);
 			this.updatePadron.sendPost();
 			if(this.updatePadron.getRestResponse().getData()!=null) {
@@ -415,7 +423,7 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
-	private void consultaPadron() throws Exception {
+	private void consultaPadron() throws Exception, CustomException {
 		try{
 			
 			if(arrayBoleta==null) {
@@ -425,7 +433,8 @@ public class CaptacionFallecidoProcess {
 					if(arrayCedula==null) {
 						
 					}else {
-						proceso(arrayCedula,2);
+						//proceso(arrayCedula,2);
+						procesoCedula(arrayCedula);
 					}
 				}else {
 					proceso(arrayDpi,2);
@@ -439,8 +448,22 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
-	private void Historico(JSONObject datos) {
+	private void BuscarHistorico() throws CustomException {
+		modelTransaction.setType(DetalleFolioHistoricoModelN.class);
+		searchCriteriaTools.clear();
+		
+		searchCriteriaTools.addIgualAnd("ID", modelo.getID().toString());
+		
+		modelTransaction.setSearchCriteriaTools(searchCriteriaTools);
+		modelTransaction.getValue();
+		this.mdlHistorico  = (DetalleFolioHistoricoModelN) modelTransaction.getResult();
+	}
+	
+	private void Historico(JSONObject datos) throws CustomException {
 		this.mdlDetalleHistorico = new DetalleFolioHistoricoModelN();
+		
+		BuscarHistorico();
+		
 		mdlDetalleHistorico.setID(modelo.getID());
 		mdlDetalleHistorico.setIDCABECERA(modelo.getIDCABECERA());
 		mdlDetalleHistorico.setAÑO(dateTools.getYearOfCurrentDate());
@@ -468,16 +491,23 @@ public class CaptacionFallecidoProcess {
 		mdlDetalleHistorico.setUSRMOD(modelo.getUSRMOD());
 		mdlDetalleHistorico.setESTATUS(modelo.getESTATUS());
 		mdlDetalleHistorico.setESTATUSF(EstadoFallecido);
-		mdlDetalleHistorico.setDEPTOINS(datos.getInteger("depEmpadronamiento"));
-		mdlDetalleHistorico.setMUNICINS(datos.getInteger("munEmpadronamiento"));
-		mdlDetalleHistorico.setDEPTOEXT(datos.getInteger("depNacimiento"));
-		mdlDetalleHistorico.setMUNICEXT(datos.getInteger("munNacimiento"));
+		if(datos!=null) {
+			mdlDetalleHistorico.setDEPTOINS( datos.getInteger("depEmpadronamiento"));
+			mdlDetalleHistorico.setMUNICINS( datos.getInteger("munEmpadronamiento"));
+			mdlDetalleHistorico.setDEPTOEXT( datos.getInteger("depNacimiento"));
+			mdlDetalleHistorico.setMUNICEXT( datos.getInteger("munNacimiento"));
+		}
+
 		mdlDetalleHistorico.setCUI(modelo.getCUI());
 		
-		modelTransaction.saveWithFlush(mdlDetalleHistorico);
+		if(mdlHistorico!=null) {
+			modelTransaction.update(mdlDetalleHistorico);
+		}else {
+			modelTransaction.saveWithFlush(mdlDetalleHistorico);
+		}
 	}
 	
-	private void proceso(JSONObject datos, Integer opcion) {
+	private void proceso(JSONObject datos, Integer opcion) throws CustomException {
 		Long boletae = null, boletac=null;
 		
 		
@@ -488,43 +518,39 @@ public class CaptacionFallecidoProcess {
 			if(datos.getInteger("statusPadron")>=0 && datos.getInteger("statusPadron")<=17) {
 				
 				if(boletae.toString().equals(boletac.toString()) && datos.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  datos.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && datos.getString("primerApellido").equals(modelo.getAPE1FALLE()) && datos.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && datos.getString("tercerApellido").equals(modelo.getAPE3FALLE())   ) {
-					
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
-						updateTPadron();
+						updateTPadron(datos);
 					}
 					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
 					EstadoFallecido = 8;
 					//ACTUALIZA CABECERA, ELIMINA HISTORICO EN CASO DE EXISTIR Y VUELVE A REALIZAR INSERCION A HISTORICO
 					Historico(datos); 
-					//DELETE TDETALLEFOLION
-					
+					//DELETE EN TABLA DETALLEFOLION
+					deleteDetalleFolio();
+					EncontroCoincidencia = true;
 				}else {
-					System.out.println(datos.getInteger("nroBoleta")+" "+datos.getString("primerNombre"));
+					Misma_Boleta_Diferente_Nombre = true;
 				}
 			}
 		break;
 		case 2:
-			
-			System.out.println(modelo.getFECHANACI());
-			String fechanacimientoAPI = Id(datos.get("fechaNacimiento").toString());
-			String fechanacimientoBD = Id(modelo.getFECHANACI().toString());
+			fechanacimientoAPI = Id(datos.get("fechaNacimiento").toString());
+			fechanacimientoBD = Id(modelo.getFECHANACI().toString());
 			if(datos.getInteger("statusPadron")>=0 && datos.getInteger("statusPadron")<=17) {
 				
 				if(fechanacimientoAPI.equals(fechanacimientoBD) &&  datos.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  datos.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && datos.getString("primerApellido").equals(modelo.getAPE1FALLE()) && datos.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && datos.getString("tercerApellido").equals(modelo.getAPE3FALLE())   ) {
-					
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
-						updateTPadron();
+						updateTPadron(datos);
 					}
 					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
 					EstadoFallecido = 8;
 					//ACTUALIZA CABECERA, ELIMINA HISTORICO EN CASO DE EXISTIR Y VUELVE A REALIZAR INSERCION A HISTORICO
-					Historico(datos); 
-					//DELETE TDETALLEFOLION
-					
-				}else {
-					System.out.println(datos.getInteger("nroBoleta")+" "+datos.getString("primerNombre"));
+					Historico(datos);
+					//DELETE EN TABLA DETALLEFOLION
+					deleteDetalleFolio();
+					EncontroCoincidencia = true;
 				}
 			}
 		break;
@@ -532,6 +558,60 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
+	private void procesoCedula(JSONArray datos) throws CustomException {
+		Integer posicion = null; JSONObject json =  null;
+		fechanacimientoBD = Id(modelo.getFECHANACI().toString());
+		for(int i=0;i<datos.size();i++) {
+			json = new JSONObject(datos.getJSONObject(i));
+			fechanacimientoAPI = Id(json.get("fechaNacimiento").toString());
+			
+			if(fechanacimientoAPI.equals(fechanacimientoBD) &&  json.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  json.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && json.getString("primerApellido").equals(modelo.getAPE1FALLE()) && json.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && json.getString("tercerApellido").equals(modelo.getAPE3FALLE())) {
+				posicion = i;
+			}
+		}
+		
+		json.clear();
+		if(posicion!=null) {
+			json = new JSONObject(datos.getJSONObject(posicion));
+			
+			if(json.getInteger("statusPadron")!=0) {
+				updateTPadron(json);
+			}
+			EstadoFallecido = 8;
+			
+			Historico(json);
+			//DELETE EN TABLA DETALLEFOLION
+			deleteDetalleFolio();
+			EncontroCoincidencia =true;
+		}
+	}
+	
+	private void deleteDetalleFolio() {
+		try {
+			if(modelo!=null) {
+				rpDetalle.deleteById(modelo.getID());
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private Integer NingunResultadoEncontrado() throws CustomException {
+		Integer valor = 0;
+		JSONObject json =  null;
+		if(EncontroCoincidencia==false) {
+			EstadoFallecido = 4; // DEFINE QUE LA PERSONA CAPTADA EN FALLECIDOS NO ESTA EMPADRONADO
+			valor = 1;
+			if(Misma_Boleta_Diferente_Nombre==false) {
+				Historico(json);
+				//DELETE EN TABLA DETALLEFOLION
+				deleteDetalleFolio();
+				
+			}
+		}
+		
+		return valor;
+	}
 	
 	private void confirmTransactionAndSetResult() {
 		transaction.commit();
@@ -587,15 +667,20 @@ public class CaptacionFallecidoProcess {
     	}
 	}
 
-
-	
-	public void VerificacionyActualizarPadron() {
+	public Integer VerificacionyActualizarPadron() throws CustomException {
+		Integer valor = 0;
 		try {
 			startTransaction();
 			updateDetalleFolio();
 			consultaNroBoleta();
+			confirmTransactionAndSetResult();
 			
+			startTransaction();
 			consultaPadron();
+			confirmTransactionAndSetResult();
+			
+			startTransaction();
+			valor = NingunResultadoEncontrado();
 			confirmTransactionAndSetResult();
 		}catch(Exception exception) {
 			transaction.rollback();
@@ -603,6 +688,8 @@ public class CaptacionFallecidoProcess {
 		}finally{
     		if (entityManager.isOpen())	entityManager.close();
     	}
+		
+		return valor;
 	}
 	
 	
