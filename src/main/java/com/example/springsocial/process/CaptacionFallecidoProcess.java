@@ -60,6 +60,7 @@ public class CaptacionFallecidoProcess {
 	private Idpaquete mdlId;
 	//VARIABLES
 	private String nrofolio, token, dpipicture, fingerprint, rubric, fechanacimientoAPI="", fechanacimientoBD="";
+	private String primerNombre = "", segundoNombre="", primerApe="",segundoApe="",tercerApe="",mdlPrimerNombre="", mdlSegundoNombre="", mdlPrimerApe="", mdlSegundoApe="", mdlTercerApe="";
 	private Integer EstadoFallecido = 0;
 	private Boolean Misma_Boleta_Diferente_Nombre = false, EncontroCoincidencia = false;
 	//APIS
@@ -76,6 +77,22 @@ public class CaptacionFallecidoProcess {
 	public void setToken(String token) {	this.token = token;}
 	public void setNroFolio(String Nrofolio) {this.nrofolio = Nrofolio;}
 	public void setRepository(DetalleFolioRepositoryN rpDetalle, CabeceraFolioRepositoryN rpCabeceraFolio) {this.rpDetalle = rpDetalle; this.rpCabeceraFolio=rpCabeceraFolio;}
+	
+	private void clear() {
+		arrayBoleta.clear(); 
+		arrayDpi.clear(); 
+		arrayCedula.clear(); 
+		mdlDetalle = null; 
+		mdlDetalleHistorico = null; 
+		mdlHistorico = null;
+		mdlCabecera = null; 
+		listCabecera = null; 
+		listaDetalle = null; 
+		modelo = null; 
+		EstadoFallecido = 0; 
+		Misma_Boleta_Diferente_Nombre = false; 
+		EncontroCoincidencia = false;
+	}
 	
 	private void startTransaction() {
 		this.entityManager = this.entityManagerFactory.createEntityManager();
@@ -143,6 +160,7 @@ public class CaptacionFallecidoProcess {
 		modelTransaction.setType(CabeceraFolioModelN.class);
 		searchCriteriaTools.clear();
 		searchCriteriaTools.addIgualAnd("IDPAQUETE", nrofolio); //no. folio
+		searchCriteriaTools.addIgualAnd("ORIGEN", "1");
 		searchCriteriaTools.addIgualAnd("AÑOFOLIO", año.toString());
 		
 		modelTransaction.setSearchCriteriaTools(searchCriteriaTools);
@@ -188,7 +206,7 @@ public class CaptacionFallecidoProcess {
 			mdlCabecera.setID(id);
 			mdlCabecera.setIDPAQUETE(Long.valueOf(data.getValue("nrofolio").toString()));
 			mdlCabecera.setAÑOFOLIO(dateTools.getYearOfCurrentDate());
-			mdlCabecera.setORIGEN(Integer.valueOf(data.getValue("origen").toString()));
+			mdlCabecera.setORIGEN(1);
 			mdlCabecera.setCODDEPTO(Integer.valueOf(data.getValue("coddepto").toString()));
 			mdlCabecera.setCODMUNIC(Integer.valueOf(data.getValue("codmunic").toString()));
 			mdlCabecera.setUSRACTUA(userPrincipal.getUsername());
@@ -430,9 +448,7 @@ public class CaptacionFallecidoProcess {
 				consultaDpi();
 				if(arrayDpi==null) {
 					consultaCedula();
-					if(arrayCedula==null) {
-						
-					}else {
+					if(arrayCedula!=null) {
 						//proceso(arrayCedula,2);
 						procesoCedula(arrayCedula);
 					}
@@ -507,9 +523,25 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
+	private void comprobarVariables(JSONObject datos) {
+		primerNombre = (datos.get("primerNombre")!=null)? datos.getString("primerNombre"):"null";
+		segundoNombre = (datos.get("segundoNombre")!=null)? datos.getString("segundoNombre"):"null";
+		primerApe = (datos.get("primerApellido")!=null)? datos.getString("primerApellido"):"null";
+		segundoApe = (datos.get("segundoApellido")!=null)? datos.getString("segundoApellido"):"null";
+		tercerApe = (datos.get("tercerApellido")!=null)? datos.getString("tercerApellido"):"null";
+		
+		mdlPrimerNombre= (modelo.getNOM1FALLE()!=null)? modelo.getNOM1FALLE() : "null";
+		mdlSegundoNombre=(modelo.getNOM2FALLE()!=null)? modelo.getNOM2FALLE() : "null";
+		mdlPrimerApe=(modelo.getAPE1FALLE()!=null)? modelo.getAPE1FALLE() : "null";
+		mdlSegundoApe=(modelo.getAPE2FALLE()!=null)? modelo.getAPE2FALLE() : "null";
+		
+		mdlTercerApe=(modelo.getAPE3FALLE()!=null)? modelo.getAPE3FALLE() : "null";
+	}
+	
 	private void proceso(JSONObject datos, Integer opcion) throws CustomException {
 		Long boletae = null, boletac=null;
 		
+		comprobarVariables(datos);
 		
 		switch(opcion) {
 		case 1:
@@ -517,7 +549,8 @@ public class CaptacionFallecidoProcess {
 			boletac = Long.valueOf(modelo.getNROBOLETA().toString());
 			if(datos.getInteger("statusPadron")>=0 && datos.getInteger("statusPadron")<=17) {
 				
-				if(boletae.toString().equals(boletac.toString()) && datos.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  datos.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && datos.getString("primerApellido").equals(modelo.getAPE1FALLE()) && datos.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && datos.getString("tercerApellido").equals(modelo.getAPE3FALLE())   ) {
+				
+				if(boletae.toString().equals(boletac.toString()) && primerNombre.equals(mdlPrimerNombre) &&  segundoNombre.equals(mdlSegundoNombre) && primerApe.equals(mdlPrimerApe) && segundoApe.equals(mdlSegundoApe) && tercerApe.equals(mdlTercerApe) ) {
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
 						updateTPadron(datos);
@@ -539,7 +572,7 @@ public class CaptacionFallecidoProcess {
 			fechanacimientoBD = Id(modelo.getFECHANACI().toString());
 			if(datos.getInteger("statusPadron")>=0 && datos.getInteger("statusPadron")<=17) {
 				
-				if(fechanacimientoAPI.equals(fechanacimientoBD) &&  datos.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  datos.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && datos.getString("primerApellido").equals(modelo.getAPE1FALLE()) && datos.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && datos.getString("tercerApellido").equals(modelo.getAPE3FALLE())   ) {
+				if(fechanacimientoAPI.equals(fechanacimientoBD) &&  primerNombre.equals(mdlPrimerNombre) &&  segundoNombre.equals(mdlSegundoNombre) && primerApe.equals(mdlPrimerApe) && segundoApe.equals(mdlSegundoApe) && tercerApe.equals(mdlTercerApe)   ) {
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
 						updateTPadron(datos);
@@ -565,7 +598,9 @@ public class CaptacionFallecidoProcess {
 			json = new JSONObject(datos.getJSONObject(i));
 			fechanacimientoAPI = Id(json.get("fechaNacimiento").toString());
 			
-			if(fechanacimientoAPI.equals(fechanacimientoBD) &&  json.getString("primerNombre").equals(modelo.getNOM1FALLE()) &&  json.getString("segundoNombre").equals(modelo.getNOM2FALLE()) && json.getString("primerApellido").equals(modelo.getAPE1FALLE()) && json.getString("segundoApellido").equals(modelo.getAPE2FALLE()) && json.getString("tercerApellido").equals(modelo.getAPE3FALLE())) {
+			comprobarVariables(json);
+			
+			if(fechanacimientoAPI.equals(fechanacimientoBD) && primerNombre.equals(mdlPrimerNombre) &&  segundoNombre.equals(mdlSegundoNombre) && primerApe.equals(mdlPrimerApe) && segundoApe.equals(mdlSegundoApe) && tercerApe.equals(mdlTercerApe)   ) {
 				posicion = i;
 			}
 		}
@@ -682,6 +717,7 @@ public class CaptacionFallecidoProcess {
 			startTransaction();
 			valor = NingunResultadoEncontrado();
 			confirmTransactionAndSetResult();
+			clear();
 		}catch(Exception exception) {
 			transaction.rollback();
 			response.setError(exception.getMessage());

@@ -90,13 +90,22 @@ public class DetalleFolioModelN implements Serializable{
 	private String USRMOD;
 	@Column(name="ESTADODIFERENCIA")
 	private Integer ESTADODIFERENCIA;
+	@Column(name="COINCIDENCIAS")
+	private String COINCIDENCIAS;
 	
+
 	
 	public DetalleFolioModelN() {
 	}
 	
-	
-	
+	public String getCOINCIDENCIAS() {
+		return COINCIDENCIAS;
+	}
+
+	public void setCOINCIDENCIAS(String cOINCIDENCIAS) {
+		COINCIDENCIAS = cOINCIDENCIAS;
+	}
+
 	public Long getID() {
 		return ID;
 	}

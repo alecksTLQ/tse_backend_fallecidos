@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.fastjson.JSONException;
 import com.example.springsocial.crud.ObjectSetGet;
+import com.example.springsocial.error.CustomException;
 import com.example.springsocial.process.CaptacionFallecido_RenapDefuncionesProcess;
 import com.example.springsocial.quartz.PlayService;
 import com.example.springsocial.quartz.timeservice.TimerInfo;
@@ -38,10 +39,15 @@ public class CaptacionAutomaticaJob implements Job{
 		JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
 		TimerInfo info = (TimerInfo) jobDataMap.get(CaptacionAutomaticaJob.class.getSimpleName());
 		
-		tarea(info.getToken(), info.getUserPrincipal(), info.getFecha(), info.getRpCabeceraFolio(), info.getRpDetalleFolio());
+		try {
+			tarea(info.getToken(), info.getUserPrincipal(), info.getFecha(), info.getRpCabeceraFolio(), info.getRpDetalleFolio());
+		} catch (CustomException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	public void tarea(String token, String user, String fecha, CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio) {
+	public void tarea(String token, String user, String fecha, CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio) throws CustomException {
 		try {
 			System.out.println("Tarea automatica: captacion ");
 			captacion.setToken(token);

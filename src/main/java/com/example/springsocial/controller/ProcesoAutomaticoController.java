@@ -58,19 +58,25 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 	
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("obtenerRegistrosRenap")
-	public RestResponse obtenerRegistrosRenap(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestBody Object element) {
+	public RestResponse obtenerRegistrosRenap(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestBody Object element) throws CustomException {
 
 		authTokenHeader = request.getHeader("Authorization");
 		try {
 			
 			data.setObject(element);
 			if (data.getValue("fecha")==null || data.getValue("fecha")=="" ) return new RestResponse(null,new CustomException("Ingrese la fecha",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
-			serviceQuartz.setRepository(rpCabeceraFolio, rpDetalleFolio);
-			serviceQuartz.setData(element);
-			serviceQuartz.setToken(authTokenHeader);
-			serviceQuartz.setUserPrincipal(userPrincipal);
-			serviceQuartz.runTarea();
-				
+			//serviceQuartz.setRepository(rpCabeceraFolio, rpDetalleFolio);
+			//serviceQuartz.setData(element);
+			//serviceQuartz.setToken(authTokenHeader);
+			//serviceQuartz.setUserPrincipal(userPrincipal);
+			//serviceQuartz.runTarea();
+			captacionRenap.setEntityManagerFactory(entityManagerFactory);
+			captacionRenap.setRespository(rpCabeceraFolio, rpDetalleFolio);
+			captacionRenap.setData(element);
+			captacionRenap.setToken(authTokenHeader);
+			captacionRenap.setUserPrincipal(userPrincipal);
+			captacionRenap.ObtenerRegistrosDefuncionesRenap();
+			
 			if (serviceQuartz.getResponse().getError()!=null)throw new Exception(serviceQuartz.getResponse().getError().toString());
 			else {
 				response.setData(serviceQuartz.getResponse().getData());
