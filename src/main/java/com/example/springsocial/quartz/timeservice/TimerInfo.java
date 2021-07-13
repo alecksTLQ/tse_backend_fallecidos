@@ -11,7 +11,7 @@ public class TimerInfo {
 	private String nombreProceso;
 	private String IntervaloEjecucion;
 	private String descripcion;
-	
+	private Integer hora;
 	private String fecha;
 	private String token;
 	private String userPrincipal;
@@ -25,7 +25,14 @@ public class TimerInfo {
 	}
 	
 	
-	
+	public Integer getHora() {
+		return hora;
+	}
+
+	public void setHora(Integer hora) {
+		this.hora = hora;
+	}
+
 	public CabeceraFolioRepositoryN getRpCabeceraFolio() {
 		return rpCabeceraFolio;
 	}

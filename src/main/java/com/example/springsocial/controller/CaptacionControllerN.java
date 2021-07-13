@@ -113,7 +113,7 @@ public class CaptacionControllerN <T> implements CrudController{
 	
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("buscarFallecido")
-	public RestResponse obtener(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestBody Object element) throws CustomException {
+	public RestResponse Buscar(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestBody Object element) throws CustomException {
 
 		String authTokenHeader = request.getHeader("Authorization");
 		ObjectSetGet data= new ObjectSetGet();
@@ -145,7 +145,7 @@ public class CaptacionControllerN <T> implements CrudController{
 	
 	@PreAuthorize("hasRole('USER')")
 	@PutMapping("modificarFallecido")
-	public RestResponse modificar(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) {
+	public RestResponse modificar(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) throws CustomException {
 		String authTokenHeader = request.getHeader("Authorization");
 		ObjectSetGet data= new ObjectSetGet();
 		

@@ -71,8 +71,16 @@ public class DateTools<T> {
 		Integer hora  = locaDate.getHour();
 		
 		horas.put("horaInicial",formatohora(hora));
-		horas.put("horaFinal", formatohora(hora+1));
+		horas.put("horaFinal", formatohora(hora+2));
 		
+		return horas;
+	}
+	
+	public JSONObject getHorasConsumo(Integer hora) {
+		JSONObject horas = new JSONObject();
+		
+		horas.put("horaInicial", formatohora(hora));
+		horas.put("horaFinal", formatohora(hora+2));
 		return horas;
 	}
 	

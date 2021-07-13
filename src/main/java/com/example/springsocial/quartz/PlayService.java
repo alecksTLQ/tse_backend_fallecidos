@@ -55,6 +55,7 @@ public class PlayService {
 			info.setIntervaloEjecucion("");
 			info.setDescripcion("Obtener Datos de API Defunciones, verificacion en TPADRON y posterior insercion");
 			info.setToken(this.token);
+			info.setHora(4);
 			info.setUserPrincipal(userPrincipal.getUsername());
 			info.setFecha(data.getValue("fecha").toString());
 			info.setRpCabeceraFolio(rpCabeceraFolio);

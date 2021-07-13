@@ -51,9 +51,9 @@ public class CaptacionFallecidoProcess {
 	private RestResponse response= new RestResponse();
 	private ObjectSetGet responseApi= new ObjectSetGet();
 	//MODELOS
-	private DetalleFolioModelN mdlDetalle;
+	private DetalleFolioModelN mdlDetalle, mdlDetalleTm;
 	private DetalleFolioHistoricoModelN mdlDetalleHistorico = null, mdlHistorico = null;
-	private CabeceraFolioModelN mdlCabecera;
+	private CabeceraFolioModelN mdlCabecera, mdlCebeceraTm;
 	private List<CabeceraFolioModelN> listCabecera;
 	private List<DetalleFolioModelN> listaDetalle;
 	private DetalleFolioModelN modelo = null;
@@ -79,9 +79,9 @@ public class CaptacionFallecidoProcess {
 	public void setRepository(DetalleFolioRepositoryN rpDetalle, CabeceraFolioRepositoryN rpCabeceraFolio) {this.rpDetalle = rpDetalle; this.rpCabeceraFolio=rpCabeceraFolio;}
 	
 	private void clear() {
-		arrayBoleta.clear(); 
-		arrayDpi.clear(); 
-		arrayCedula.clear(); 
+		arrayBoleta = null; 
+		arrayDpi = null;
+		arrayCedula = null; 
 		mdlDetalle = null; 
 		mdlDetalleHistorico = null; 
 		mdlHistorico = null;
@@ -120,13 +120,11 @@ public class CaptacionFallecidoProcess {
 			case 2: 
 				//NO. FOLIO =  IDPAQUETE //****
 				Integer año =  dateTools.getYearOfCurrentDate();
-				searchCriteriaTools.clear();
-				modelTransaction.setType(DetalleFolioModelN.class);
-				searchCriteriaTools.addIgualAnd("IDPAQUETE", data.getValue("idpaquete").toString());
-				searchCriteriaTools.addIgualAnd("AÑOFOLIO", año.toString());
-				modelTransaction.setSearchCriteriaTools(searchCriteriaTools);
-				modelTransaction.getListValue();
-				this.listaDetalle = (List<DetalleFolioModelN>) modelTransaction.getResult();
+				this.listaDetalle = rpDetalle.selectByFolioAndOrigen(
+						Integer.valueOf(data.getValue("idpaquete").toString()),
+						año, 
+						Integer.valueOf(data.getValue("origen").toString())
+				);
 				response.setData(listaDetalle);
 			break;
 			case 3:
@@ -140,8 +138,40 @@ public class CaptacionFallecidoProcess {
 				response.setData(listaDetalle);
 			break;
 			case 4:	
-				this.listaDetalle = rpDetalle.selectByFechaCreacion(data.getValue("fecha").toString(), Integer.valueOf(data.getValue("origen").toString()));
+				this.listaDetalle = rpDetalle.selectByFechaCreacion(data.getValue("fecha").toString(), Integer.valueOf(data.getValue("origen").toString()), userPrincipal.getUsername());
 				response.setData(listaDetalle);
+			break;
+			case 5:
+				this.listaDetalle = rpDetalle.selectByCedula(data.getValue("orden").toString(), Integer.valueOf(data.getValue("registro").toString()));
+				response.setData(listaDetalle);
+			break;
+			case 6:
+				//UN NOMBRE UN APELLIDO
+				if(data.getValue("nom1").toString()!="" && data.getValue("nom2").toString()=="" && data.getValue("ape1").toString()!="" && data.getValue("ape2").toString()=="" && data.getValue("ape3").toString()=="") {
+					listaDetalle = rpDetalle.selectByNombre2(data.getValue("nom1").toString(), data.getValue("ape1").toString());
+				}
+				//UN NOMBRE Y DOS APELLIDOS
+				if(data.getValue("nom1").toString()!="" && data.getValue("nom2").toString()=="" && data.getValue("ape1").toString()!="" && data.getValue("ape2").toString()!="" && data.getValue("ape3").toString()=="") {
+					listaDetalle= rpDetalle.selectByNombre3(data.getValue("nom1").toString(), data.getValue("ape1").toString(), data.getValue("ape2").toString());
+				}
+				//DOS NOMBRES Y PRIMER APELLIDO
+				if(data.getValue("nom1").toString()!="" && data.getValue("nom2").toString()!="" && data.getValue("ape1").toString()!="" && data.getValue("ape2").toString()=="" && data.getValue("ape3").toString()=="") {
+					listaDetalle= rpDetalle.selectByNombre6(data.getValue("nom1").toString(), data.getValue("nom2").toString(), data.getValue("ape1").toString());
+				}
+				//DOS NOMBRES Y DOS APELLIDOS
+				if(data.getValue("nom1").toString()!="" && data.getValue("nom2").toString()!="" && data.getValue("ape1").toString()!="" && data.getValue("ape2").toString()!="" && data.getValue("ape3").toString()=="") {
+					listaDetalle =rpDetalle.selectByNombre4(data.getValue("nom1").toString(), data.getValue("nom2").toString(), data.getValue("ape1").toString(), data.getValue("ape2").toString());
+				}
+				//DOS NOMBRES Y TRES APELLIDOS
+				if(data.getValue("nom1").toString()!="" && data.getValue("nom2").toString()!="" && data.getValue("ape1").toString()!="" && data.getValue("ape2").toString()!="" && data.getValue("ape3").toString()!="") {
+					listaDetalle=rpDetalle.selectByNombre5(data.getValue("nom1").toString(), data.getValue("nom2").toString(), data.getValue("ape1").toString(), data.getValue("ape2").toString(), data.getValue("ape3").toString());
+				}
+				
+				if(listaDetalle!=null && listaDetalle.size()>0) {
+					response.setData(listaDetalle);
+				}else {
+					response.setData(null);
+				}
 			break;
 			default:
 					
@@ -257,30 +287,52 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
-	private void updateCabecerayDetalle() throws Exception {
+	private void obtenerDatosCabecera() throws Exception, CustomException {
+		modelTransaction.setType(CabeceraFolioModelN.class);
+		searchCriteriaTools.clear();
+		searchCriteriaTools.addIgualAnd("ID", data.getValue("id").toString()); //no. folio
+		modelTransaction.setSearchCriteriaTools(searchCriteriaTools);
+		modelTransaction.getValue();
+		
+		this.mdlCebeceraTm =  (CabeceraFolioModelN) modelTransaction.getResult();
+	}
+	
+	private void obtenerDatosDetalle() throws Exception, CustomException {
+		modelTransaction.setType(DetalleFolioModelN.class);
+		searchCriteriaTools.clear();
+		searchCriteriaTools.addIgualAnd("ID", data.getValue("iddetalle").toString()); //no. folio
+		modelTransaction.setSearchCriteriaTools(searchCriteriaTools);
+		modelTransaction.getValue();
+		
+		this.mdlDetalleTm  =  (DetalleFolioModelN) modelTransaction.getResult();
+	}
+	
+	private void updateCabecerayDetalle() throws Exception, CustomException {
 		
 		try {
 			
+			obtenerDatosCabecera();
+			obtenerDatosDetalle();
 			this.mdlCabecera = new CabeceraFolioModelN();
 			this.mdlDetalle = new DetalleFolioModelN();
 			
 			mdlCabecera.setID(Long.valueOf(data.getValue("id").toString()));
-			mdlCabecera.setIDPAQUETE(Long.valueOf(data.getValue("nrofolio").toString()));
-			mdlCabecera.setAÑOFOLIO(Integer.valueOf(data.getValue("año").toString()));
-			mdlCabecera.setORIGEN(Integer.valueOf(data.getValue("origen").toString()));
+			mdlCabecera.setIDPAQUETE(mdlCebeceraTm.getIDPAQUETE());
+			mdlCabecera.setAÑOFOLIO(mdlCebeceraTm.getAÑOFOLIO());
+			mdlCabecera.setORIGEN(mdlCebeceraTm.getORIGEN());
 			mdlCabecera.setCODDEPTO(Integer.valueOf(data.getValue("coddepto").toString()));
 			mdlCabecera.setCODMUNIC(Integer.valueOf(data.getValue("codmunic").toString()));
 			mdlCabecera.setUSRMOD(userPrincipal.getUsername());//usuario que modifica
 			mdlCabecera.setFECMOD(dateTools.get_CurrentDate());//fecha de modificacion
-			mdlCabecera.setUSRACTUA(data.getValue("usuariocreacion").toString());
-			mdlCabecera.setFECCRE(dateTools.convertAndgetDate(data.getValue("fechacreacion").toString()));
-			mdlCabecera.setLINEAFOLIO(Integer.valueOf(data.getValue("linea").toString()));
+			mdlCabecera.setUSRACTUA(mdlCebeceraTm.getUSRACTUA());
+			mdlCabecera.setFECCRE(mdlCebeceraTm.getFECCRE());
+			mdlCabecera.setLINEAFOLIO(mdlCebeceraTm.getLINEAFOLIO());
 	    	modelTransaction.update(mdlCabecera);
 	    	
 	    	
 	    	mdlDetalle.setID(Long.valueOf(data.getValue("iddetalle").toString()));
-	    	mdlDetalle.setIDCABECERA(Long.valueOf(data.getValue("id").toString()));
-			mdlDetalle.setNROLINEA(Integer.valueOf(data.getValue("nrolinea").toString()));
+	    	mdlDetalle.setIDCABECERA(mdlDetalleTm.getIDCABECERA());
+			mdlDetalle.setNROLINEA(mdlDetalleTm.getNROLINEA());
 			mdlDetalle.setAPE1FALLE(data.getValue("apellido1fallecido").toString());
 			mdlDetalle.setAPE2FALLE(data.getValue("apellido2fallecido").toString());
 			mdlDetalle.setAPE3FALLE(data.getValue("apellido3fallecido").toString());
@@ -297,13 +349,15 @@ public class CaptacionFallecidoProcess {
 			mdlDetalle.setNROREGIST(Integer.valueOf( data.getValue("nroregistro").toString()));
 			mdlDetalle.setNROBOLETA(Integer.valueOf(data.getValue("nroboleta").toString()));
 			mdlDetalle.setFECHANACI(dateTools.convertAndgetDate(data.getValue("fechanacimiento").toString()));
-			mdlDetalle.setFECCRE(dateTools.convertAndgetDate(data.getValue("fechacreacion").toString()));
+			mdlDetalle.setFECCRE(mdlDetalleTm.getFECCRE());
 			mdlDetalle.setUSRVERIFI("N");
-			mdlDetalle.setUSRDIGITA(data.getValue("usuariocreacion").toString());
-			mdlDetalle.setESTATUS(data.getValue("estado").toString());
+			mdlDetalle.setUSRDIGITA(mdlDetalleTm.getUSRDIGITA());
+			mdlDetalle.setESTATUS(mdlDetalleTm.getESTATUS());
 			mdlDetalle.setCUI(Long.valueOf(data.getValue("cui").toString()));
 			mdlDetalle.setFECMOD(dateTools.get_CurrentDate());
 			mdlDetalle.setUSRMOD(userPrincipal.getUsername());
+			mdlDetalle.setESTADODIFERENCIA(mdlDetalleTm.getESTADODIFERENCIA());
+			mdlDetalle.setCOINCIDENCIAS(mdlDetalleTm.getCOINCIDENCIAS());
 			
 			modelTransaction.update(mdlDetalle);
 			
@@ -344,6 +398,8 @@ public class CaptacionFallecidoProcess {
 			mdlDetalle.setCUI(modelo.getCUI());
 			mdlDetalle.setFECMOD(modelo.getFECMOD());
 			mdlDetalle.setUSRMOD(modelo.getUSRMOD());
+			mdlDetalle.setESTADODIFERENCIA(modelo.getESTADODIFERENCIA());
+			mdlDetalle.setCOINCIDENCIAS(modelo.getCOINCIDENCIAS());
 			
 			modelTransaction.update(mdlDetalle);
 			
@@ -531,9 +587,9 @@ public class CaptacionFallecidoProcess {
 		tercerApe = (datos.get("tercerApellido")!=null)? datos.getString("tercerApellido"):"null";
 		
 		mdlPrimerNombre= (modelo.getNOM1FALLE()!=null)? modelo.getNOM1FALLE() : "null";
-		mdlSegundoNombre=(modelo.getNOM2FALLE()!=null)? modelo.getNOM2FALLE() : "null";
-		mdlPrimerApe=(modelo.getAPE1FALLE()!=null)? modelo.getAPE1FALLE() : "null";
-		mdlSegundoApe=(modelo.getAPE2FALLE()!=null)? modelo.getAPE2FALLE() : "null";
+		mdlSegundoNombre= (modelo.getNOM2FALLE()!=null)? modelo.getNOM2FALLE() : "null";
+		mdlPrimerApe= (modelo.getAPE1FALLE()!=null)? modelo.getAPE1FALLE() : "null";
+		mdlSegundoApe= (modelo.getAPE2FALLE()!=null)? modelo.getAPE2FALLE() : "null";
 		
 		mdlTercerApe=(modelo.getAPE3FALLE()!=null)? modelo.getAPE3FALLE() : "null";
 	}
@@ -651,10 +707,8 @@ public class CaptacionFallecidoProcess {
 	private void confirmTransactionAndSetResult() {
 		transaction.commit();
 	}
-
 	
 	/* METODOS DEL CONTROLLER */
-	
 	public Integer save() throws CustomException {
 		Integer indicador = 0;
 		try {
@@ -688,7 +742,7 @@ public class CaptacionFallecidoProcess {
 	}
 	
 	
-	public void update() {
+	public void update() throws CustomException {
 		try {
 			startTransaction();
 			updateCabecerayDetalle();

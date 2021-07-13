@@ -75,9 +75,8 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	private String primerNombre = "", segundoNombre="", primerApe="", segundoApe="", tercerApe="", cui="";
 	private JSONArray arrayApi = null;
 	private Long folio=null, Id=null;
-	Integer Linea=0;
+	Integer Linea=0,  Hora = 0;
 	private ApiDefunciones defunciones = new ApiDefunciones();
-	
 	//APIS
 	private ApiTPadron tpadron = new ApiTPadron();
 	
@@ -89,6 +88,7 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {if(entityManagerFactory!=null) this.entityManagerFactory=entityManagerFactory;}
 	public void setToken(String token) {	this.token = token;}
 	public void setRespository(CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalle) {this.rpCabeceraFolio = rpCabeceraFolio; this.rpDetalle = rpDetalle;}
+	public void setHoraInicia(Integer Hora) {this.Hora = Hora;}
 	
 	private void startTransaction() {
 		this.entityManager = this.entityManagerFactory.createEntityManager();
@@ -171,13 +171,15 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 				mdlDetalle.setNROREGIST(0);
 			}
 			if(datos.getString("estadoDiferencia").equals("111111")) {
+				mdlDetalle.setESTADODIFERENCIA(0);
 				mdlDetalle.setNROBOLETA(datos.getInteger("boleta")); //OBTENER DE CONSULTA TPADRON ||
 				mdlDetalle.setESTATUS(datos.getString("statusPadron"));// segun como se encotraba en TPADRON o puede ser 0 en caso de no estar empadronado
 				mdlDetalle.setCOINCIDENCIAS(datos.getString("null"));
 			}else {
+				mdlDetalle.setESTADODIFERENCIA(1);
 				mdlDetalle.setNROBOLETA(0);
 				mdlDetalle.setESTATUS("0");
-				mdlDetalle.setCOINCIDENCIAS(datos.getString("boleta"));
+				mdlDetalle.setCOINCIDENCIAS(datos.getString("mayorCoincidencia"));
 			}
 			
 			mdlDetalle.setFECHANACI(datos.getDate("fecha_NACIMIENTO"));
@@ -185,7 +187,6 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 			mdlDetalle.setUSRDIGITA(this.user);
 			mdlDetalle.setUSRVERIFI("N");
 			mdlDetalle.setCUI(  (datos.get("cui")!=null)?  Long.valueOf(datos.get("cui").toString()):0l);
-			mdlDetalle.setESTADODIFERENCIA(datos.getInteger("estadoDiferencia"));
 			
 			modelTransaction.saveWithFlush(mdlDetalle);
 			
@@ -201,14 +202,14 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	
 	private void consultaTwsDefunciones() throws Exception {
 		String fechaMenor = new SimpleDateFormat("dd/MM/yyyy").format(dateTools.restar());
-		Horas = dateTools.getHoraActual();
+		Horas = dateTools.getHorasConsumo(this.Hora);
 		
 		try {
 			this.defunciones.clearParms();
 			this.defunciones.setGetPath();
-			this.defunciones.addParam("fecha","19/06/2021");
-			this.defunciones.addParam("horainicio","19:30:00");
-			this.defunciones.addParam("horafinal", "19:40:00");
+			this.defunciones.addParam("fecha",fecha);
+			this.defunciones.addParam("horainicio",Horas.getString("horaInicial"));
+			this.defunciones.addParam("horafinal", Horas.getString("horaFinal"));
 			this.defunciones.setAuthorizationHeader(this.token);
 			this.defunciones.sendPost();
 			if(defunciones.getRestResponse().getData()!=null) {
@@ -231,7 +232,6 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		
 		for(int x =0; x<datos.size();x++) {
 			JSONObject json = new JSONObject(datos.getJSONObject(x));
-			
 
 				if(control==0) {
 					deptoDefuncion = (json.getInteger("depto_DEFUNCION")!=null)? json.getInteger("depto_DEFUNCION"):0;
@@ -248,6 +248,10 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		}
 		
 		if(contenedor.size()>0) {
+			Linea = 0;
+			confirmTransactionAndSetResult();
+			if (entityManager.isOpen())	entityManager.close();
+			startTransaction();
 			consultaTPadron(contenedor);
 		}
 	}
@@ -323,23 +327,27 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 			if(arrayCedula==null) {
 				consultaNombreHomonimo(json);
 				if(arrayHomonimos!=null) {
-					
+					procesoCedulayHomnimos(arrayHomonimos,json,depto,muni);
+				}else {
+					json.put("estadoDiferencia", 1);
+					json.put("mayorCoincidencia", "null");
+					InsertCabecerayDetalle(json, depto,muni);
 				}
 			}else {
-				procesoCedula(arrayApi);
+				procesoCedulayHomnimos(arrayCedula, json,depto, muni);
 			}
 		}else {
-			proceso(json, depto, muni);
+			proceso(arrayDpi,json, depto, muni);
 		}
 	}
 	
-	private void comprobarVariables(JSONObject datos){
-		primerNombre = (arrayDpi.get("primerNombre")!=null)? arrayDpi.getString("primerNombre"):"null";
-		segundoNombre = ( arrayDpi.get("segundoNombre")!=null )? arrayDpi.getString("segundoNombre"):"null";
-		primerApe = (arrayDpi.get("primerApellido")!=null)? arrayDpi.getString("primerApellido"):"null";
-		segundoApe = ( arrayDpi.get("segundoApellido")!=null )? arrayDpi.getString("segundoApellido"):"null";
-		tercerApe = (arrayDpi.get("tercerApellido")!=null)? arrayDpi.getString("tercerApellido"):"null";
-		cui = (arrayDpi.getJSONObject("dpi").getString("cui") !=null)? arrayDpi.getJSONObject("dpi").getString("cui"):"null";
+	private void comprobarVariables(JSONObject datostpadron, JSONObject datos){
+		primerNombre = (datostpadron.get("primerNombre")!=null)? datostpadron.getString("primerNombre"):"null";
+		segundoNombre = ( datostpadron.get("segundoNombre")!=null )? datostpadron.getString("segundoNombre"):"null";
+		primerApe = (datostpadron.get("primerApellido")!=null)? datostpadron.getString("primerApellido"):"null";
+		segundoApe = ( datostpadron.get("segundoApellido")!=null )? datostpadron.getString("segundoApellido"):"null";
+		tercerApe = (datostpadron.get("tercerApellido")!=null)? datostpadron.getString("tercerApellido"):"null";
+		cui = (datostpadron.getJSONObject("dpi").getString("cui") !=null)? datostpadron.getJSONObject("dpi").getString("cui"):"null";
 		
 		primerNombrews = (datos.get("primer_NOMBRE")!=null)? datos.getString("primer_NOMBRE"):"null";
 		segundoNombrews = (datos.get("segundo_NOMBRE")!=null)? datos.getString("segundo_NOMBRE"):"null";
@@ -349,9 +357,10 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		cuiws = (datos.get("cui")!=null)? datos.getString("cui"):"null";
 	}
 	
-	private void proceso(JSONObject json, Integer depto, Integer muni) {
+	private void proceso(JSONObject jsondpi, JSONObject json, Integer depto, Integer muni) {
 		String fechaNacimientoWs = "", fechaNacimientoTpadron = "", estadoDiferencia="";
-		comprobarVariables(json);
+		Integer contador = 0;
+		comprobarVariables(jsondpi, json);
 		
 		fechaNacimientoWs = Id(json.get("fecha_NACIMIENTO").toString());
 		fechaNacimientoTpadron = Id(arrayDpi.get("fechaNacimiento").toString());
@@ -360,31 +369,37 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		if(cui.equals(cuiws)) {
 			//INSERCION EN TCABECERA Y TDETALLE
 			if(fechaNacimientoTpadron.equals(fechaNacimientoWs)) {
+				contador++;
 				estadoDiferencia=estadoDiferencia+"1";
 			}else {
 				estadoDiferencia=estadoDiferencia+"0";
 			}
 			if(primerNombre.equals(primerNombrews)) {
+				contador++;
 				estadoDiferencia=estadoDiferencia+"1";
 			}else {
 				estadoDiferencia=estadoDiferencia+"0";
 			}
 			if(segundoNombre.equals(segundoNombrews)) {
+				contador++;
 				estadoDiferencia=estadoDiferencia+"1";
 			}else {
 				estadoDiferencia=estadoDiferencia+"0";
 			}
 			if(primerApe.equals(primerApews)) {
+				contador++;
 				estadoDiferencia=estadoDiferencia+"1";
 			}else {
 				estadoDiferencia=estadoDiferencia+"0";
 			}
 			if(segundoApe.equals(segundoApews)) {
+				contador++;
 				estadoDiferencia=estadoDiferencia+"1";
 			}else {
 				estadoDiferencia=estadoDiferencia+"0";
 			}
 			if(tercerApe.equals(tercerApews)) {
+				contador++;
 				estadoDiferencia=estadoDiferencia+"1";
 			}else {
 				estadoDiferencia=estadoDiferencia+"0";
@@ -392,8 +407,9 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 			
 			
 			json.put("estadoDiferencia", estadoDiferencia);
-			json.put("boleta", arrayDpi.get("nroBoleta").toString());
-			json.put("statusPadron",arrayDpi.get("statusPadron").toString());
+			json.put("boleta", jsondpi.get("nroBoleta").toString());
+			json.put("statusPadron",jsondpi.get("statusPadron").toString());
+			json.put("mayorCoincidencia", jsondpi.get("nroBoleta").toString());
 			InsertCabecerayDetalle(json, depto,muni);
 			arrayDpi.clear();
 			arrayDpi = null;
@@ -402,32 +418,71 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	}
 	
 	@SuppressWarnings("null")
-	private void procesoCedula(JSONArray datos) throws CustomException {
-		Integer posicion = null; JSONObject json =  null;
-		String fechaNacimientoWs = "", fechaNacimientoTpadron = "";
-		comprobarVariables(json);
+	private void procesoCedulayHomnimos(JSONArray datosConsultaPadron, JSONObject jsonws,Integer depto, Integer muni) throws CustomException {
+		Integer posicion = null; JSONObject jsontpadron =  null;
+		String fechaNacimientoWs = "", fechaNacimientoTpadron = "", estadoDiferencia="";
+		Integer contador = 0, control = null;
 		
-		fechaNacimientoWs = Id(json.get("fecha_NACIMIENTO").toString());	
+		fechaNacimientoWs = Id(jsonws.get("fecha_NACIMIENTO").toString());	
 		
-		for(int i=0;i<datos.size();i++) {
-			json = new JSONObject(datos.getJSONObject(i));
-			fechaNacimientoTpadron = Id(json.get("fechaNacimiento").toString());
+		for(int i=0;i<datosConsultaPadron.size();i++) {
+			jsontpadron = new JSONObject(datosConsultaPadron.getJSONObject(i));
+			fechaNacimientoTpadron = Id(jsontpadron.get("fechaNacimiento").toString());
 			
-			comprobarVariables(json);
-			
-			if(fechaNacimientoTpadron.equals(fechaNacimientoWs) && primerNombre.equals(primerNombrews) &&  segundoNombre.equals(segundoNombrews) && primerApe.equals(primerApews) && segundoApe.equals(segundoApews) && tercerApe.equals(tercerApews)   ) {
-				posicion = i;
-			}
+			comprobarVariables(jsontpadron, jsonws);
+							
+				if(fechaNacimientoTpadron.equals(fechaNacimientoWs)) {
+					contador++;estadoDiferencia=estadoDiferencia+"1";
+				}
+				if(primerNombre.equals(primerNombrews)) {
+					contador++;estadoDiferencia=estadoDiferencia+"1";
+				}
+				if( segundoNombre.equals(segundoNombrews)) {
+					contador++;estadoDiferencia=estadoDiferencia+"1";
+				}
+				if(primerApe.equals(primerApews)) {
+					contador++;estadoDiferencia=estadoDiferencia+"1";
+				}
+				if(segundoApe.equals(segundoApews)) {
+					contador++;estadoDiferencia=estadoDiferencia+"1";
+				}
+				if(tercerApe.equals(tercerApews)) {
+					contador++;estadoDiferencia=estadoDiferencia+"1";
+				}
+				if(contador==6) {
+					posicion = i;
+				}else {
+					if(contador>0) {
+						control = i;
+						contador = 0;
+					}
+				}
+				estadoDiferencia="";
 		}
 		
-		json.clear();
+		jsontpadron.clear();
 		if(posicion!=null) {
-			json = new JSONObject(datos.getJSONObject(posicion));
+			jsontpadron = new JSONObject(datosConsultaPadron.getJSONObject(posicion));
 			//INSERCION
+			jsonws.put("estadoDiferencia", estadoDiferencia);
+			jsonws.put("statusPadron", jsontpadron.get("statusPadron"));
+			jsonws.put("boleta", jsontpadron.get("nroBoleta"));
+			InsertCabecerayDetalle(jsontpadron, depto, muni);
 			System.out.println("INSERCION");
+		}else {
+			if(control!=null) {
+				jsontpadron = new JSONObject(datosConsultaPadron.getJSONObject(control));
+				jsonws.put("estadoDiferencia", estadoDiferencia);
+				jsonws.put("mayorCoincidencia", jsontpadron.get("nroBoleta"));
+			}else {
+				jsonws.put("mayorCoincidencia", "null");
+			}
+			InsertCabecerayDetalle(jsonws, depto, muni);
 		}
+		arrayCedula=null;
+		arrayHomonimos=null;
+		
 	}
-	
 	
 	private Long DefinirId(Integer opcion) {
 		Long id = null;
@@ -452,85 +507,11 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		return id;
 	}
 	
-	private void insertCabeceraYDetalle() throws ParseException {
-		
-		this.mdlCabecera = new CabeceraFolioModelN();
-		String primernombre=null, segundonombre=null;
-		JSONObject jsontemp = new JSONObject(arrayApi.getJSONObject(0));
-		IDPAQUETE = Id(jsontemp.get("entrega").toString());
-		
-		Long id = DefinirId(1);
-		
-		for(int x =0; x<arrayApi.size();x++) {
-			JSONObject json = new JSONObject(arrayApi.getJSONObject(x));
-			
-			System.out.println("ciclo: "+x);
-			
-			mdlCabecera.setID(id);
-			mdlCabecera.setIDPAQUETE(DefinirId(2));
-			mdlCabecera.setAÑOFOLIO(dateTools.getYearOfCurrentDate());
-			//mdlCabecera.setFECHAENTREGA(jsontemp.getDate("entrega"));
-			mdlCabecera.setORIGEN(2);
-			mdlCabecera.setFECCRE(dateTools.get_CurrentDate());
-			mdlCabecera.setUSRACTUA(this.user);
-			
-			if(x==0) {
-				mdlCabecera.setLINEAFOLIO(1);
-				modelTransaction.saveWithFlush(mdlCabecera);
-			}else {
-				mdlCabecera.setLINEAFOLIO(x+1);
-				modelTransaction.update(mdlCabecera);
-			}
-			
-			this.mdlDetalle = new DetalleFolioModelN();
-			//mdlDetalle.setIDPAQUETE(IDPAQUETE);
-			//mdlDetalle.setAÑOFOLIO(dateTools.getYearOfCurrentDate());
-			mdlDetalle.setIDCABECERA(id);
-			mdlDetalle.setNROLINEA(x+1);
-			mdlDetalle.setAPE1FALLE(  (json.get("primer_APELLIDO")!=null)? json.get("primer_APELLIDO").toString():"null" );
-			mdlDetalle.setAPE2FALLE(  (json.get("segundo_APELLIDO")!=null)? json.get("segundo_APELLIDO").toString():"null" );
-			mdlDetalle.setAPE3FALLE(  (json.get("apellido_CASADA")!=null)? json.get("apellido_CASADA").toString():"null" );
-			mdlDetalle.setNOM1FALLE(  (json.get("primer_NOMBRE")!=null)? json.get("primer_NOMBRE").toString():"null" );
-			mdlDetalle.setNOM2FALLE(  (json.get("segundo_NOMBRE")!=null)? json.get("segundo_NOMBRE").toString():"null");
-			mdlDetalle.setAPE1PADRE(  (json.get("primer_APELLIDO_PADRE")!=null)? json.get("primer_APELLIDO_PADRE").toString():"null"  );
-			mdlDetalle.setAPE2PADRE(  (json.get("segundo_APELLIDO_PADRE")!=null)? json.get("segundo_APELLIDO_PADRE").toString():"null");
-			
-			primernombre = (json.get("primer_NOMBRE_PADRE")!=null)? json.get("primer_NOMBRE_PADRE").toString():"null";
-			segundonombre = (json.get("segundo_NOMBRE_PADRE")!=null)?json.get("segundo_NOMBRE_PADRE").toString():"null";
-			mdlDetalle.setNOMPADRE(   primernombre+" "+segundonombre    );			
-			mdlDetalle.setAPE1MADRE(  (json.get("primer_APELLIDO_MADRE")!=null)? json.get("primer_APELLIDO_MADRE").toString():"null");
-			mdlDetalle.setAPE2MADRE(  (json.get("segundo_APELLIDO_MADRE")!=null)? json.get("segundo_APELLIDO_MADRE").toString():"null");
-			primernombre = (json.get("primer_NOMBRE_MADRE")!=null)? json.get("primer_NOMBRE_MADRE").toString():"null";
-			segundonombre = (json.get("segundo_NOMBRE_MADRE")!=null)? json.get("segundo_NOMBRE_MADRE").toString():"null";
-			mdlDetalle.setNOMMADRE(  primernombre+" "+segundonombre);
-			mdlDetalle.setFECHADEFU(json.getDate("fecha_DEFUNCION"));
-			mdlDetalle.setNROORDEN(  (json.get("orden_CEDULA")!=null)? json.get("orden_CEDULA").toString():"nul");
-			
-			try {
-				mdlDetalle.setNROREGIST( (json.get("registro_CEDULA")!=null)? json.getInteger("registro_CEDULA"):0);
-			}catch(Exception e) {
-				mdlDetalle.setNROREGIST(0);
-			}
-			mdlDetalle.setNROBOLETA(10010); //OBTENER DE CONSULTA TPADRON || 
-			mdlDetalle.setFECHANACI(json.getDate("fecha_NACIMIENTO"));
-			mdlDetalle.setFECCRE(dateTools.get_CurrentDate());
-			mdlDetalle.setUSRDIGITA(this.user);
-			mdlDetalle.setUSRVERIFI("N");
-			mdlDetalle.setESTATUS("0");// segun como se encotraba en TPADRON o puede ser 0 en caso de no estar empadronado
-			mdlDetalle.setCUI(  (json.get("cui")!=null)?  Long.valueOf(json.get("cui").toString()):0l);
-			modelTransaction.saveWithFlush(mdlDetalle);
-			
-		}
-		
-		clear();
-	}
-	
 	public void ObtenerRegistrosDefuncionesRenap() throws CustomException {
 		try {
 			startTransaction();
 			consultaTwsDefunciones();
 			consultaTPadron(arrayApi);
-			//insertCabeceraYDetalle();
 			confirmTransactionAndSetResult();
 			
 		}catch(Exception exception) {
@@ -579,12 +560,5 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		return Id = fecha;
 	}
 	
+	
 }
-
-
-
-
-
-
-
-

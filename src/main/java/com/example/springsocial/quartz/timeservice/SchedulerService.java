@@ -6,13 +6,14 @@ import javax.annotation.PreDestroy;
 import org.json.JSONObject;
 import org.quartz.Job;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
+import com.example.springsocial.quartz.SimpleTriggerListener;
 import com.example.springsocial.tools.RestResponse;
 
 
@@ -21,7 +22,7 @@ public class SchedulerService {
 	
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SchedulerService.class);
-	private final Scheduler scheduler;
+	private static Scheduler scheduler = null;
 	@SuppressWarnings("rawtypes")
 	private RestResponse response= new RestResponse();
 	
@@ -54,13 +55,37 @@ public class SchedulerService {
 		return response;
 	}
 	
+	public static void updateTimer(final String timerId, final TimerInfo info) {
+        try {
+            final JobDetail jobDetail = scheduler.getJobDetail(new JobKey(timerId));
+            if (jobDetail == null) {
+                LOG.error("Failed to find timer with ID '{}'", timerId);
+                return;
+            }
+
+            jobDetail.getJobDataMap().put(timerId, info);
+
+            scheduler.addJob(jobDetail, true, true);
+        } catch (final SchedulerException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+	
+	public static void deleteJob(final String timerId) {
+		try{
+			scheduler.deleteJob(new JobKey(timerId));
+		}catch(Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+	}
+	
 	
 	
 	@PostConstruct
 	public void init() {
 		try {
 			scheduler.start();
-			
+			scheduler.getListenerManager().addTriggerListener(new SimpleTriggerListener(this));
 		}catch(Exception e) {
 			LOG.error(e.getMessage(), e);
 		}

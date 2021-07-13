@@ -38,20 +38,21 @@ public class CaptacionAutomaticaJob implements Job{
 		// TODO Auto-generated method stub
 		JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
 		TimerInfo info = (TimerInfo) jobDataMap.get(CaptacionAutomaticaJob.class.getSimpleName());
-		
+		System.out.println("Hora de consulta: "+ info.getHora());
 		try {
-			tarea(info.getToken(), info.getUserPrincipal(), info.getFecha(), info.getRpCabeceraFolio(), info.getRpDetalleFolio());
+			tarea(info.getToken(), info.getUserPrincipal(), info.getFecha(), info.getRpCabeceraFolio(), info.getRpDetalleFolio(), info.getHora());
 		} catch (CustomException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public void tarea(String token, String user, String fecha, CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio) throws CustomException {
+	public void tarea(String token, String user, String fecha, CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio, Integer Hora) throws CustomException {
 		try {
 			System.out.println("Tarea automatica: captacion ");
 			captacion.setToken(token);
 			captacion.setFecha(fecha);
+			captacion.setHoraInicia(Hora);
 			captacion.setUser(user);
 			captacion.setEntityManagerFactory(this.entityManagerFactory);
 			captacion.setRespository(rpCabeceraFolio, rpDetalleFolio);

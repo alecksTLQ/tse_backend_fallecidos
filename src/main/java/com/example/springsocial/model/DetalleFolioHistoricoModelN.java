@@ -6,6 +6,8 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @SuppressWarnings("serial")
@@ -19,6 +21,13 @@ public class DetalleFolioHistoricoModelN implements Serializable{
 	
 	@Column(name="IDCABECERA")
 	private Long IDCABECERA;
+	
+	
+	@ManyToOne
+	@JoinColumn(name="IDCABECERA", referencedColumnName="ID",insertable=false, updatable=false)
+	private CabeceraFolioModelN IDCABECERAN;
+	
+	
 	@Column(name="AÑO")
 	private Integer AÑO;
 	@Column(name="NROLINEA")
@@ -67,7 +76,7 @@ public class DetalleFolioHistoricoModelN implements Serializable{
 	private String USRMOD;
 	@Column(name="ESTATUS")
 	private String ESTATUS;
-	@Column(name="ESTATUSF")
+	@Column(name="ESTATUSF") //8 || 4  SI FUE ACTUALIZADO ES DECIR ESTA EMPADRONADO || SI NO FUE ACTUALIZADO ES DECIR NO ESTA EMPADRONADO
 	private Integer ESTATUSF;
 	@Column(name="DEPTOINS")
 	private Integer DEPTOINS;
@@ -79,7 +88,10 @@ public class DetalleFolioHistoricoModelN implements Serializable{
 	private Integer MUNICEXT;
 	@Column(name="CUI")
 	private Long CUI;
-	
+	@Column(name="ESTADODIFERENCIA")
+	private Integer ESTADODIFERENCIA;
+	@Column(name="COINCIDENCIAS")
+	private String COINCIDENCIAS;
 	
 	
 	
@@ -88,6 +100,15 @@ public class DetalleFolioHistoricoModelN implements Serializable{
 	}
 	
 	
+	
+	public CabeceraFolioModelN getIDCABECERAN() {
+		return IDCABECERAN;
+	}
+
+	public void setIDCABECERAN(CabeceraFolioModelN iDCABECERAN) {
+		IDCABECERAN = iDCABECERAN;
+	}
+
 	public Long getID() {
 		return ID;
 	}
