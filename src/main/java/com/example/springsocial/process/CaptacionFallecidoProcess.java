@@ -25,6 +25,7 @@ import com.example.springsocial.model.DetalleFolioModelN;
 import com.example.springsocial.model.Idpaquete;
 import com.example.springsocial.model.IdpaqueteDetalle;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
+import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 import com.example.springsocial.security.UserPrincipal;
 import com.example.springsocial.tools.DateTools;
@@ -42,6 +43,7 @@ public class CaptacionFallecidoProcess {
 	//REPOSITORY
 	private DetalleFolioRepositoryN rpDetalle = null;
 	private CabeceraFolioRepositoryN rpCabeceraFolio = null;
+	private DetalleFolioHistoricoRepository rpDetalleHistorico = null;
 	//TOOLS
 	private SearchCriteriaTools searchCriteriaTools= new SearchCriteriaTools();
 	private ModelSetGetTransaction modelTransaction =new ModelSetGetTransaction();
@@ -67,7 +69,7 @@ public class CaptacionFallecidoProcess {
 	private ApiRenapImages images = new ApiRenapImages();
 	private ApiTPadron tpadron = new ApiTPadron();
 	private ApiUpdateTPadron updatePadron = new ApiUpdateTPadron();
-	private JSONObject arrayBoleta, arrayDpi;
+	private JSONObject arrayBoleta, arrayDpi, datosmod;
 	private JSONArray arrayCedula = null;
 	
 	public RestResponse getResponse() {return this.response; }
@@ -76,7 +78,11 @@ public class CaptacionFallecidoProcess {
 	public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {if(entityManagerFactory!=null) this.entityManagerFactory=entityManagerFactory;}
 	public void setToken(String token) {	this.token = token;}
 	public void setNroFolio(String Nrofolio) {this.nrofolio = Nrofolio;}
-	public void setRepository(DetalleFolioRepositoryN rpDetalle, CabeceraFolioRepositoryN rpCabeceraFolio) {this.rpDetalle = rpDetalle; this.rpCabeceraFolio=rpCabeceraFolio;}
+	public void setRepository(
+			DetalleFolioRepositoryN rpDetalle, 
+			CabeceraFolioRepositoryN rpCabeceraFolio,
+			DetalleFolioHistoricoRepository rpDetalleHistorico) 
+	{this.rpDetalle = rpDetalle; this.rpCabeceraFolio=rpCabeceraFolio; this.rpDetalleHistorico=rpDetalleHistorico;}
 	
 	private void clear() {
 		arrayBoleta = null; 
@@ -92,6 +98,16 @@ public class CaptacionFallecidoProcess {
 		EstadoFallecido = 0; 
 		Misma_Boleta_Diferente_Nombre = false; 
 		EncontroCoincidencia = false;
+	}
+	
+	private void datosmodifica() {
+		this.datosmod = new JSONObject();
+		this.datosmod.put("status", 0);
+		this.datosmod.put("usrmod", userPrincipal.getUsername());
+		this.datosmod.put("fecmod", dateTools.get_CurrentDate());
+		this.datosmod.put("idpro",27);
+		this.datosmod.put("fecpro", dateTools.get_CurrentDate());
+		this.datosmod.put("puestomod",119);
 	}
 	
 	private void startTransaction() {
@@ -280,6 +296,7 @@ public class CaptacionFallecidoProcess {
 			mdlDetalle.setUSRVERIFI("N");
 			mdlDetalle.setESTATUS(data.getValue("estado").toString()); // estado en el que se encontraba en Tpadron o 0
 			mdlDetalle.setCUI(Long.valueOf(data.getValue("cui").toString()));
+			mdlDetalle.setESTADODIFERENCIA(0);
 			modelTransaction.saveWithFlush(mdlDetalle);
 			
 		}catch(Exception e) {
@@ -482,11 +499,17 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
-	private void updateTPadron(JSONObject datos) {
+	private void updateTPadron(JSONObject datos,JSONObject datosmod) {
 		try {
 			this.updatePadron.clearParms();
 			this.updatePadron.setGetPath();
-			this.updatePadron.addParam("nroboleta", datos.get("nroBoleta").toString());
+			this.updatePadron.addParam("nroboleta", datos.getString("nroboleta"));
+			this.updatePadron.addParam("status", datosmod.getString("status"));
+			this.updatePadron.addParam("usrmod", datosmod.getString("usrmod"));
+			this.updatePadron.addParam("fecmod", datosmod.getString("fecmod"));
+			this.updatePadron.addParam("idpro", datosmod.getString("idpro"));
+			this.updatePadron.addParam("fecpro", datosmod.getString("fecpro"));
+			this.updatePadron.addParam("puestomod", datosmod.getString("puestomod"));
 			this.updatePadron.setAuthorizationHeader(this.token);
 			this.updatePadron.sendPost();
 			if(this.updatePadron.getRestResponse().getData()!=null) {
@@ -568,6 +591,7 @@ public class CaptacionFallecidoProcess {
 			mdlDetalleHistorico.setMUNICINS( datos.getInteger("munEmpadronamiento"));
 			mdlDetalleHistorico.setDEPTOEXT( datos.getInteger("depNacimiento"));
 			mdlDetalleHistorico.setMUNICEXT( datos.getInteger("munNacimiento"));
+			mdlDetalleHistorico.setREFERENCIAS(datos.getString("statusPadron")+"-"+datos.getString("idProceso")+"-"+datos.getString("puestomodifica"));
 		}
 
 		mdlDetalleHistorico.setCUI(modelo.getCUI());
@@ -597,8 +621,8 @@ public class CaptacionFallecidoProcess {
 	private void proceso(JSONObject datos, Integer opcion) throws CustomException {
 		Long boletae = null, boletac=null;
 		
+		datosmodifica();
 		comprobarVariables(datos);
-		
 		switch(opcion) {
 		case 1:
 			boletae = datos.getLong("nroBoleta");
@@ -609,7 +633,7 @@ public class CaptacionFallecidoProcess {
 				if(boletae.toString().equals(boletac.toString()) && primerNombre.equals(mdlPrimerNombre) &&  segundoNombre.equals(mdlSegundoNombre) && primerApe.equals(mdlPrimerApe) && segundoApe.equals(mdlSegundoApe) && tercerApe.equals(mdlTercerApe) ) {
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
-						updateTPadron(datos);
+						updateTPadron(datos,datosmod);
 					}
 					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
 					EstadoFallecido = 8;
@@ -631,7 +655,7 @@ public class CaptacionFallecidoProcess {
 				if(fechanacimientoAPI.equals(fechanacimientoBD) &&  primerNombre.equals(mdlPrimerNombre) &&  segundoNombre.equals(mdlSegundoNombre) && primerApe.equals(mdlPrimerApe) && segundoApe.equals(mdlSegundoApe) && tercerApe.equals(mdlTercerApe)   ) {
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
-						updateTPadron(datos);
+						updateTPadron(datos,datosmod);
 					}
 					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
 					EstadoFallecido = 8;
@@ -649,6 +673,7 @@ public class CaptacionFallecidoProcess {
 	
 	private void procesoCedula(JSONArray datos) throws CustomException {
 		Integer posicion = null; JSONObject json =  null;
+		
 		fechanacimientoBD = Id(modelo.getFECHANACI().toString());
 		for(int i=0;i<datos.size();i++) {
 			json = new JSONObject(datos.getJSONObject(i));
@@ -666,7 +691,7 @@ public class CaptacionFallecidoProcess {
 			json = new JSONObject(datos.getJSONObject(posicion));
 			
 			if(json.getInteger("statusPadron")!=0) {
-				updateTPadron(json);
+				updateTPadron(json,datosmod);
 			}
 			EstadoFallecido = 8;
 			
@@ -708,6 +733,80 @@ public class CaptacionFallecidoProcess {
 		transaction.commit();
 	}
 	
+	private JSONObject buscarHistoricoCorreccion() throws CustomException, Exception {
+		JSONObject modeloHistorico = new JSONObject();
+		modelTransaction.setType(DetalleFolioHistoricoModelN.class);
+		searchCriteriaTools.clear();
+		searchCriteriaTools.addIgualAnd("ID", data.getValue("iddetalle").toString());
+		modelTransaction.setSearchCriteriaTools(searchCriteriaTools);
+		modelTransaction.getValue();
+		this.mdlDetalleHistorico =  (DetalleFolioHistoricoModelN) modelTransaction.getResult();
+		
+		if(mdlDetalleHistorico!=null) {
+			modeloHistorico.put("nroboleta", mdlDetalleHistorico.getNROBOLETA());
+			String [] partes = mdlDetalleHistorico.getREFERENCIAS().split("-");
+			
+			this.datosmod = new JSONObject();
+			this.datosmod.put("status", partes[0]);
+			this.datosmod.put("usrmod", userPrincipal.getUsername());
+			this.datosmod.put("fecmod", dateTools.get_CurrentDate());
+			this.datosmod.put("idpro", partes[1]);
+			this.datosmod.put("fecpro", dateTools.get_CurrentDate());
+			this.datosmod.put("puestomod",partes[2]);
+		}else {
+			modeloHistorico.put("error", "FALLECIDO NO ENCONTRADO");
+		}
+		
+		return modeloHistorico;
+	}
+	
+	private void RecuperarDetalle() {
+		if(this.mdlDetalleHistorico!=null) {
+			this.mdlDetalle = new DetalleFolioModelN();
+			
+			//this.mdlDetalle.setID(mdlDetalleHistorico.getID());
+			this.mdlDetalle.setIDCABECERA(mdlDetalleHistorico.getIDCABECERA());
+			this.mdlDetalle.setNROLINEA(mdlDetalleHistorico.getNROLINEA());
+			this.mdlDetalle.setAPE1FALLE(mdlDetalleHistorico.getAPE1FALLE());
+			this.mdlDetalle.setAPE2FALLE(mdlDetalleHistorico.getAPE2FALLE());
+			this.mdlDetalle.setAPE3FALLE(mdlDetalleHistorico.getAPE3FALLE());
+			this.mdlDetalle.setNOM1FALLE(mdlDetalleHistorico.getNOM1FALLE());
+			this.mdlDetalle.setNOM2FALLE(mdlDetalleHistorico.getNOM2FALLE());
+			this.mdlDetalle.setAPE1PADRE(mdlDetalleHistorico.getAPE1PADRE());
+			this.mdlDetalle.setAPE2PADRE(mdlDetalleHistorico.getAPE2PADRE());
+			this.mdlDetalle.setNOMPADRE(mdlDetalleHistorico.getNOMPADRE());
+			this.mdlDetalle.setAPE1MADRE(mdlDetalleHistorico.getAPE1MADRE());
+			this.mdlDetalle.setAPE2MADRE(mdlDetalleHistorico.getAPE2MADRE());
+			this.mdlDetalle.setNOMMADRE(mdlDetalleHistorico.getNOMMADRE());
+			this.mdlDetalle.setFECHADEFU(mdlDetalleHistorico.getFECHADEFU());
+			this.mdlDetalle.setNROORDEN(mdlDetalleHistorico.getNROORDEN());
+			this.mdlDetalle.setNROREGIST(mdlDetalleHistorico.getNROREGIST());
+			this.mdlDetalle.setNROBOLETA(mdlDetalleHistorico.getNROBOLETA());
+			this.mdlDetalle.setFECHANACI(mdlDetalleHistorico.getFECHANACI());
+			this.mdlDetalle.setFECCRE(mdlDetalleHistorico.getFECCRE());
+			this.mdlDetalle.setUSRDIGITA(mdlDetalleHistorico.getUSRCRE());
+			this.mdlDetalle.setUSRVERIFI(mdlDetalleHistorico.getUSRVERIFI());
+			this.mdlDetalle.setESTATUS(mdlDetalleHistorico.getESTATUS());
+			this.mdlDetalle.setCUI(mdlDetalleHistorico.getCUI());
+			this.mdlDetalle.setFECMOD(mdlDetalleHistorico.getFECMOD());
+			this.mdlDetalle.setUSRMOD(mdlDetalleHistorico.getUSRMOD());
+			this.mdlDetalle.setESTADODIFERENCIA(mdlDetalleHistorico.getESTADODIFERENCIA());
+			this.mdlDetalle.setCOINCIDENCIAS(mdlDetalleHistorico.getCOINCIDENCIAS());
+			
+			this.modelTransaction.saveWithFlush(this.mdlDetalle);
+		}
+	}
+	
+	private void DeleteDetalleHistorico() {
+		try {
+			
+			rpDetalleHistorico.deleteById(Long.valueOf(data.getValue("iddetalle").toString()));
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/* METODOS DEL CONTROLLER */
 	public Integer save() throws CustomException {
 		Integer indicador = 0;
@@ -726,7 +825,6 @@ public class CaptacionFallecidoProcess {
 		return indicador;
 	}
 	
-	
 	public void select() throws CustomException {
 	
 		try {
@@ -740,8 +838,7 @@ public class CaptacionFallecidoProcess {
     	}
 		
 	}
-	
-	
+		
 	public void update() throws CustomException {
 		try {
 			startTransaction();
@@ -782,6 +879,30 @@ public class CaptacionFallecidoProcess {
 		return valor;
 	}
 	
+	public void ProcesoCorrecccion() throws CustomException{
+		JSONObject datos = new JSONObject();
+		try {
+		
+			startTransaction();
+			datos = buscarHistoricoCorreccion();
+			if(datos.containsKey("error")!=true) {
+				updateTPadron(datos,datosmod);
+			}
+			RecuperarDetalle();
+			DeleteDetalleHistorico();
+			confirmTransactionAndSetResult();
+			
+		}catch(Exception exception) {
+			transaction.rollback();
+			response.setError(exception.getMessage());
+		}finally{
+    		if (entityManager.isOpen())	entityManager.close();
+    	}
+		/*
+		 * 12016	10/11/83	MANUEL	DE JESUS	CHILEL	GALVES		9	19/09/60	12	21	1	3	0	1	1	169	49	843	12 CALLE MIRAFLORES	17-31	11	1	1	999			JASANTIAGO	16/02/15			37	03/11/14	2	119	21-05	
+		 * 
+		 * */
+	}
 	
 	private String Id(String idpaquete) {
 		String Id = "", fecha = "", hora = "";
@@ -801,4 +922,5 @@ public class CaptacionFallecidoProcess {
 		
 		return Id = fecha;
 	}
+
 }

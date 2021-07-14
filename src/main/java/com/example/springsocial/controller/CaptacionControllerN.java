@@ -25,10 +25,12 @@ import com.example.springsocial.error.CustomException;
 import com.example.springsocial.error.ErrorCode;
 import com.example.springsocial.generic.CrudController;
 import com.example.springsocial.model.CabeceraFolioModelN;
+import com.example.springsocial.model.DetalleFolioHistoricoModelN;
 import com.example.springsocial.model.DetalleFolioModelN;
 import com.example.springsocial.model.IdpaqueteDetalle;
 import com.example.springsocial.process.CaptacionFallecidoProcess;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
+import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 import com.example.springsocial.repository.ElementRepository;
 import com.example.springsocial.repository.EntitiRepository;
@@ -54,6 +56,8 @@ public class CaptacionControllerN <T> implements CrudController{
 	CabeceraFolioRepositoryN rpCabeceraFolio;
 	@Autowired
 	DetalleFolioRepositoryN rpDetalleFolio;
+	@Autowired
+	DetalleFolioHistoricoRepository rpDetalleFolioHistorico;
 	
 	private CaptacionFallecidoProcess captacion = new CaptacionFallecidoProcess();
 	private String moduleName="DetalleFolioModelN";
@@ -87,14 +91,14 @@ public class CaptacionControllerN <T> implements CrudController{
 			if (data.getValue("coddepto")==null || data.getValue("coddepto")=="" ) return new RestResponse(null,new CustomException("Ingrese el departamento",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			if (data.getValue("codmunic")==null || data.getValue("codmunic")=="" ) return new RestResponse(null,new CustomException("Ingrese el municipio",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			
-			captacion.setRepository(rpDetalleFolio, rpCabeceraFolio);
+			captacion.setRepository(rpDetalleFolio, rpCabeceraFolio, rpDetalleFolioHistorico);
 			captacion.setNroFolio(data.getValue("nrofolio").toString());
 			captacion.setEntityManagerFactory(entityManagerFactory);
 			captacion.setUserPrincipal(userPrincipal);
 			captacion.setToken(authTokenHeader);
 			captacion.setData(createElement);
 			indicador = captacion.save();
-			
+			//12016	10/11/83	MANUEL	DE JESUS	CHILEL	GALVES		9	19/09/60	12	21	1	3	0	1	1	169	49	843	12 CALLE MIRAFLORES	17-31	11	1	1	999			JASANTIAGO	16/02/15			37	03/11/14	2	119	21-05	
 			if (captacion.getResponse().getError()!=null)throw new Exception(captacion.getResponse().getError().toString());
 			else {
 				if(indicador==0) {
@@ -123,7 +127,7 @@ public class CaptacionControllerN <T> implements CrudController{
 			data.setObject(element);
 			año = dateTools.getYearOfCurrentDate();
 			
-			captacion.setRepository(rpDetalleFolio,rpCabeceraFolio);
+			captacion.setRepository(rpDetalleFolio,rpCabeceraFolio, rpDetalleFolioHistorico);
 			captacion.setEntityManagerFactory(entityManagerFactory);
 			captacion.setUserPrincipal(userPrincipal);
 			captacion.setToken(authTokenHeader);
@@ -188,7 +192,7 @@ public class CaptacionControllerN <T> implements CrudController{
 			if (data.getValue("dpi")==null || data.getValue("dpi")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de CUI",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			if (data.getValue("iddetalle")==null || data.getValue("iddetalle")=="" ) return new RestResponse(null,new CustomException("Ingrese el No. de Folio",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 
-			captacion.setRepository(rpDetalleFolio,rpCabeceraFolio);
+			captacion.setRepository(rpDetalleFolio,rpCabeceraFolio, rpDetalleFolioHistorico);
 			captacion.setEntityManagerFactory(entityManagerFactory);
 			captacion.setUserPrincipal(userPrincipal);
 			captacion.setData(element);
@@ -212,4 +216,35 @@ public class CaptacionControllerN <T> implements CrudController{
 		return response;
 	}
 	
+	@PreAuthorize("hasRole('USER')")
+	@PostMapping("CorreccionFallecido")
+	public RestResponse CorreccionFallecido(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) throws CustomException {
+		
+		String authTokenHeader = request.getHeader("Authorization");
+		
+		try {
+		
+			data.setObject(element);
+			if (data.getValue("iddetalle")==null || data.getValue("iddetalle")=="" ) return new RestResponse(null,new CustomException("iddetalle",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
+			
+			captacion.setRepository(rpDetalleFolio, rpCabeceraFolio, rpDetalleFolioHistorico);
+			captacion.setEntityManagerFactory(entityManagerFactory);
+			captacion.setUserPrincipal(userPrincipal);
+			captacion.setData(element);
+			captacion.setToken(authTokenHeader);
+			captacion.ProcesoCorrecccion();
+			
+			if (captacion.getResponse().getError()!=null)throw new Exception(captacion.getResponse().getError().toString());
+			else {
+				
+				response.setData("RECUPERACION DEL HISTORICO PARA CORRECCION!");
+			}
+			
+		}catch (Exception exception) {
+			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);
+			response.setError(customExcepction);
+	    }
+		
+		return response;
+	}
 }

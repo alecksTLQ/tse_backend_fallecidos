@@ -92,6 +92,8 @@ public class DetalleFolioHistoricoModelN implements Serializable{
 	private Integer ESTADODIFERENCIA;
 	@Column(name="COINCIDENCIAS")
 	private String COINCIDENCIAS;
+	@Column(name="REFERENCIAS")
+	private String REFERENCIAS; // ALMACENA DATOS COMO = IDPRO, PUESTOMODIFICA QUE YA TENIA REGISTRADOS
 	
 	
 	
@@ -99,8 +101,30 @@ public class DetalleFolioHistoricoModelN implements Serializable{
 	public DetalleFolioHistoricoModelN() {
 	}
 	
-	
-	
+	public String getREFERENCIAS() {
+		return REFERENCIAS;
+	}
+
+	public void setREFERENCIAS(String rEFERENCIAS) {
+		REFERENCIAS = rEFERENCIAS;
+	}
+
+	public Integer getESTADODIFERENCIA() {
+		return ESTADODIFERENCIA;
+	}
+
+	public void setESTADODIFERENCIA(Integer eSTADODIFERENCIA) {
+		ESTADODIFERENCIA = eSTADODIFERENCIA;
+	}
+
+	public String getCOINCIDENCIAS() {
+		return COINCIDENCIAS;
+	}
+
+	public void setCOINCIDENCIAS(String cOINCIDENCIAS) {
+		COINCIDENCIAS = cOINCIDENCIAS;
+	}
+
 	public CabeceraFolioModelN getIDCABECERAN() {
 		return IDCABECERAN;
 	}
