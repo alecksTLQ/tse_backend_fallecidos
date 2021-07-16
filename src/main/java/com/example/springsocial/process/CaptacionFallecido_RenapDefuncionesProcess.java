@@ -25,9 +25,11 @@ import com.example.springsocial.crud.ModelSetGetTransaction;
 import com.example.springsocial.crud.ObjectSetGet;
 import com.example.springsocial.error.CustomException;
 import com.example.springsocial.model.CabeceraFolioModelN;
+import com.example.springsocial.model.DetalleFolioHistoricoModelN;
 import com.example.springsocial.model.DetalleFolioModelN;
 import com.example.springsocial.model.Idpaquete;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
+import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 import com.example.springsocial.security.UserPrincipal;
 import com.example.springsocial.tools.DateTools;
@@ -43,6 +45,8 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	private DetalleFolioRepositoryN rpDetalle;
 	@Autowired
 	private CabeceraFolioRepositoryN rpCabeceraFolio;
+	@Autowired
+	private DetalleFolioHistoricoRepository rpHistorico;
 	
 	private EntityManagerFactory entityManagerFactory;
 	private EntityTransaction transaction  = null;
@@ -66,6 +70,8 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	//MODELOS
 	private DetalleFolioModelN mdlDetalle;
 	private CabeceraFolioModelN mdlCabecera;
+	private DetalleFolioHistoricoModelN mdlHistorico;
+	private List<DetalleFolioHistoricoModelN> listaHistorico;
 	private List<DetalleFolioModelN> listaDetalle;
 	private List<CabeceraFolioModelN> listaCabeceraFolio;
 	private Idpaquete mdlId;
@@ -120,6 +126,16 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		
 		response.setData(arreglo);
 		
+	}
+	
+	private void reportPrevio() {
+		try {
+			
+			 listaHistorico= rpHistorico.selectByPrevioStatus(fecha, fecha);
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void InsertCabecerayDetalle(JSONObject datos, Integer depto, Integer muni) {
@@ -208,8 +224,10 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 			this.defunciones.clearParms();
 			this.defunciones.setGetPath();
 			this.defunciones.addParam("fecha",fecha);
-			this.defunciones.addParam("horainicio",Horas.getString("horaInicial"));
-			this.defunciones.addParam("horafinal", Horas.getString("horaFinal"));
+			this.defunciones.addParam("horainicio","19:00:00");
+			this.defunciones.addParam("horafinal","20:00:00");
+			//this.defunciones.addParam("horainicio",Horas.getString("horaInicial"));
+			//this.defunciones.addParam("horafinal", Horas.getString("horaFinal"));
 			this.defunciones.setAuthorizationHeader(this.token);
 			this.defunciones.sendPost();
 			if(defunciones.getRestResponse().getData()!=null) {
@@ -241,6 +259,7 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 				if(json.getInteger("depto_DEFUNCION")==deptoDefuncion && json.getInteger("munic_DEFUNCION")==municDefuncion) {
 					System.out.println("depto:"+deptoDefuncion+"  munic:"+municDefuncion+" "+json.getString("primer_NOMBRE"));
 					Linea = Linea + 1;
+					System.out.println("Linea por cada dep y muni :"+Linea);
 					comparativaProceso(json, deptoDefuncion,municDefuncion);
 				}else {
 					contenedor.add(json);
@@ -526,6 +545,19 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		try {
 			startTransaction();
 			datosVerificados();
+			
+		}catch(Exception exception) {
+			transaction.rollback();
+			response.setError(exception.getMessage());
+		}finally{
+    		if (entityManager.isOpen())	entityManager.close();
+    	}
+	}
+	
+	public void ReportesFallecidos() {
+		try {
+			
+			reportPrevio();
 			
 		}catch(Exception exception) {
 			transaction.rollback();

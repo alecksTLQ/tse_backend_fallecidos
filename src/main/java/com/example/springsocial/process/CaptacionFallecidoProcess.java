@@ -369,7 +369,7 @@ public class CaptacionFallecidoProcess {
 			mdlDetalle.setFECCRE(mdlDetalleTm.getFECCRE());
 			mdlDetalle.setUSRVERIFI("N");
 			mdlDetalle.setUSRDIGITA(mdlDetalleTm.getUSRDIGITA());
-			mdlDetalle.setESTATUS(mdlDetalleTm.getESTATUS());
+			mdlDetalle.setESTATUS(data.getValue("estado").toString());
 			mdlDetalle.setCUI(Long.valueOf(data.getValue("cui").toString()));
 			mdlDetalle.setFECMOD(dateTools.get_CurrentDate());
 			mdlDetalle.setUSRMOD(userPrincipal.getUsername());
@@ -499,11 +499,12 @@ public class CaptacionFallecidoProcess {
 		}
 	}
 	
-	private void updateTPadron(JSONObject datos,JSONObject datosmod) {
+	private void updateTPadron(JSONObject datos,JSONObject datosmod, Integer opcion) {
+		String llave = (opcion==1)? "nroBoleta":"nroboleta";
 		try {
 			this.updatePadron.clearParms();
 			this.updatePadron.setGetPath();
-			this.updatePadron.addParam("nroboleta", datos.getString("nroboleta"));
+			this.updatePadron.addParam("nroboleta", datos.getString(llave));
 			this.updatePadron.addParam("status", datosmod.getString("status"));
 			this.updatePadron.addParam("usrmod", datosmod.getString("usrmod"));
 			this.updatePadron.addParam("fecmod", datosmod.getString("fecmod"));
@@ -633,7 +634,7 @@ public class CaptacionFallecidoProcess {
 				if(boletae.toString().equals(boletac.toString()) && primerNombre.equals(mdlPrimerNombre) &&  segundoNombre.equals(mdlSegundoNombre) && primerApe.equals(mdlPrimerApe) && segundoApe.equals(mdlSegundoApe) && tercerApe.equals(mdlTercerApe) ) {
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
-						updateTPadron(datos,datosmod);
+						updateTPadron(datos,datosmod,1);
 					}
 					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
 					EstadoFallecido = 8;
@@ -655,7 +656,7 @@ public class CaptacionFallecidoProcess {
 				if(fechanacimientoAPI.equals(fechanacimientoBD) &&  primerNombre.equals(mdlPrimerNombre) &&  segundoNombre.equals(mdlSegundoNombre) && primerApe.equals(mdlPrimerApe) && segundoApe.equals(mdlSegundoApe) && tercerApe.equals(mdlTercerApe)   ) {
 					//ACTUALIZAR EL STATUS EN TPADRON
 					if(datos.getInteger("statusPadron")!=0) {
-						updateTPadron(datos,datosmod);
+						updateTPadron(datos,datosmod,1);
 					}
 					//DEFINE SI EL FALLECIDO FUE ACTUALIZADO O YA ESTABA ACTUALIZADO EN SU ESTADO EN 0
 					EstadoFallecido = 8;
@@ -691,7 +692,7 @@ public class CaptacionFallecidoProcess {
 			json = new JSONObject(datos.getJSONObject(posicion));
 			
 			if(json.getInteger("statusPadron")!=0) {
-				updateTPadron(json,datosmod);
+				updateTPadron(json,datosmod,1);
 			}
 			EstadoFallecido = 8;
 			
@@ -744,15 +745,17 @@ public class CaptacionFallecidoProcess {
 		
 		if(mdlDetalleHistorico!=null) {
 			modeloHistorico.put("nroboleta", mdlDetalleHistorico.getNROBOLETA());
-			String [] partes = mdlDetalleHistorico.getREFERENCIAS().split("-");
 			
-			this.datosmod = new JSONObject();
-			this.datosmod.put("status", partes[0]);
-			this.datosmod.put("usrmod", userPrincipal.getUsername());
-			this.datosmod.put("fecmod", dateTools.get_CurrentDate());
-			this.datosmod.put("idpro", partes[1]);
-			this.datosmod.put("fecpro", dateTools.get_CurrentDate());
-			this.datosmod.put("puestomod",partes[2]);
+			if(mdlDetalleHistorico.getNROBOLETA()>0) {
+				String [] partes = mdlDetalleHistorico.getREFERENCIAS().split("-");
+				this.datosmod = new JSONObject();
+				this.datosmod.put("status", partes[0]);
+				this.datosmod.put("usrmod", userPrincipal.getUsername());
+				this.datosmod.put("fecmod", dateTools.get_CurrentDate());
+				this.datosmod.put("idpro", partes[1]);
+				this.datosmod.put("fecpro", dateTools.get_CurrentDate());
+				this.datosmod.put("puestomod",partes[2]);
+			}
 		}else {
 			modeloHistorico.put("error", "FALLECIDO NO ENCONTRADO");
 		}
@@ -885,8 +888,8 @@ public class CaptacionFallecidoProcess {
 		
 			startTransaction();
 			datos = buscarHistoricoCorreccion();
-			if(datos.containsKey("error")!=true) {
-				updateTPadron(datos,datosmod);
+			if(datos.containsKey("error")!=true && Integer.valueOf(datos.getString("nroboleta"))>0) {
+				updateTPadron(datos,datosmod,2);
 			}
 			RecuperarDetalle();
 			DeleteDetalleHistorico();

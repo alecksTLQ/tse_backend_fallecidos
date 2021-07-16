@@ -237,7 +237,7 @@ public class CaptacionControllerN <T> implements CrudController{
 			if (captacion.getResponse().getError()!=null)throw new Exception(captacion.getResponse().getError().toString());
 			else {
 				
-				response.setData("RECUPERACION DEL HISTORICO PARA CORRECCION!");
+				response.setData("RECUPERACION DE HISTORICO CORRECTA!");
 			}
 			
 		}catch (Exception exception) {
