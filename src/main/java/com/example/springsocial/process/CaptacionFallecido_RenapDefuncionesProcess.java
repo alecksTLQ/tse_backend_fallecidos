@@ -28,6 +28,7 @@ import com.example.springsocial.model.CabeceraFolioModelN;
 import com.example.springsocial.model.DetalleFolioHistoricoModelN;
 import com.example.springsocial.model.DetalleFolioModelN;
 import com.example.springsocial.model.Idpaquete;
+import com.example.springsocial.model.ReportEstatusPrevio;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
 import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
@@ -74,6 +75,7 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	private List<DetalleFolioHistoricoModelN> listaHistorico;
 	private List<DetalleFolioModelN> listaDetalle;
 	private List<CabeceraFolioModelN> listaCabeceraFolio;
+	private List< ReportEstatusPrevio> modeloReport = new ArrayList<ReportEstatusPrevio>();
 	private Idpaquete mdlId;
 	//VARIABLES 
 	private String token, fecha=null,IDPAQUETE=null;//
@@ -93,7 +95,8 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	public void setFecha(String fecha) {this.fecha = fecha;}
 	public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {if(entityManagerFactory!=null) this.entityManagerFactory=entityManagerFactory;}
 	public void setToken(String token) {	this.token = token;}
-	public void setRespository(CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalle) {this.rpCabeceraFolio = rpCabeceraFolio; this.rpDetalle = rpDetalle;}
+	public void setRespository(CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalle, DetalleFolioHistoricoRepository rpHistorico) 
+	{this.rpCabeceraFolio = rpCabeceraFolio; this.rpDetalle = rpDetalle; this.rpHistorico=rpHistorico;}
 	public void setHoraInicia(Integer Hora) {this.Hora = Hora;}
 	
 	private void startTransaction() {
@@ -127,16 +130,7 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 		response.setData(arreglo);
 		
 	}
-	
-	private void reportPrevio() {
-		try {
-			
-			 listaHistorico= rpHistorico.selectByPrevioStatus(fecha, fecha);
-			
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
+
 
 	private void InsertCabecerayDetalle(JSONObject datos, Integer depto, Integer muni) {
 		this.mdlCabecera = new CabeceraFolioModelN();
@@ -554,9 +548,66 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
     	}
 	}
 	
-	public void ReportesFallecidos() {
+	private void procesarFallecidosDepartamentos(List<DetalleFolioHistoricoModelN> lista) {
+		Integer control = 0, dep=0, muni=0;
+		for(int i=0;i<lista.size();i++) {
+			if(control==0) {
+				
+			}
+		}
+	}
+	
+	private void reportPrevio() {
 		try {
 			
+			 switch(Integer.valueOf(data.getValue("criterio").toString())) {
+			 case 1: 
+				 listaHistorico= rpHistorico.selectByPrevioStatus(data.getValue("fechaInicio").toString(), data.getValue("fechaFinal").toString());
+				 
+				 generarPdf("ReportPrevioStatus");
+				 break;
+			 case 2:
+				 listaHistorico= rpHistorico.selectByPrevioSuspendidos(data.getValue("fechaInicio").toString(), data.getValue("fechaFinal").toString());
+				 generarPdf("ReporPrevioSuspendidos");
+				 break;
+			 case 3:
+				 listaHistorico = rpHistorico.selectByDeptoAndMuni(data.getValue("fechaInicio").toString(), data.getValue("fechaFinal").toString());
+				 procesarFallecidosDepartamentos(listaHistorico);
+				 break;
+			 }
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+
+	private void generarPdf(String archivo) throws Exception {
+		modeloReport.clear();
+		GeneradorPdf generador = new GeneradorPdf();
+		String nombre = "", apellido1 ="", apellido2="", nombre2="";
+		for(int i=0;i<listaHistorico.size();i++) {
+			
+			ReportEstatusPrevio modelo = new ReportEstatusPrevio();
+			apellido2 = (listaHistorico.get(i).getAPE2FALLE()!=null)? listaHistorico.get(i).getAPE2FALLE():"";
+			apellido1 = (listaHistorico.get(i).getAPE1FALLE()!=null)? listaHistorico.get(i).getAPE1FALLE() : "";
+			nombre = (listaHistorico.get(i).getNOM1FALLE()!=null)? listaHistorico.get(i).getNOM1FALLE():"";
+			nombre2= (listaHistorico.get(i).getNOM2FALLE()!=null)? listaHistorico.get(i).getNOM2FALLE():"";
+			modelo.setBoleta(listaHistorico.get(i).getNROBOLETA().toString());
+			modelo.setDocumento(listaHistorico.get(i).getCUI().toString());
+			modelo.setNombre(apellido1+" "+apellido2+" "+nombre+" "+nombre2);
+			modelo.setFolio(listaHistorico.get(i).getIDCABECERAN().getIDPAQUETE().toString());
+			modelo.setAño(listaHistorico.get(i).getAÑO().toString());
+			modelo.setFechaDefuncion(listaHistorico.get(i).getFECHADEFU().toString());
+			modeloReport.add(modelo);
+		}
+		
+		response.setData(generador.GeneradorGenerico(modeloReport, archivo,  data.getValue("fechaInicio").toString(), data.getValue("fechaFinal").toString()));
+	}
+	
+	public void ReportesFallecidos() {
+		try {
+			startTransaction();
 			reportPrevio();
 			
 		}catch(Exception exception) {

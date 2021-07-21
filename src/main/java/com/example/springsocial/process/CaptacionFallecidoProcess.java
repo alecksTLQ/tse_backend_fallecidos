@@ -592,7 +592,8 @@ public class CaptacionFallecidoProcess {
 			mdlDetalleHistorico.setMUNICINS( datos.getInteger("munEmpadronamiento"));
 			mdlDetalleHistorico.setDEPTOEXT( datos.getInteger("depNacimiento"));
 			mdlDetalleHistorico.setMUNICEXT( datos.getInteger("munNacimiento"));
-			mdlDetalleHistorico.setREFERENCIAS(datos.getString("statusPadron")+"-"+datos.getString("idProceso")+"-"+datos.getString("puestomodifica"));
+			mdlDetalleHistorico.setREFERENCIAS(datos.getString("idProceso")+"-"+datos.getString("puestomodifica"));
+			mdlDetalleHistorico.setESTATUSPREVIO(datos.getString("statusPadron"));
 		}
 
 		mdlDetalleHistorico.setCUI(modelo.getCUI());
@@ -749,12 +750,12 @@ public class CaptacionFallecidoProcess {
 			if(mdlDetalleHistorico.getNROBOLETA()>0) {
 				String [] partes = mdlDetalleHistorico.getREFERENCIAS().split("-");
 				this.datosmod = new JSONObject();
-				this.datosmod.put("status", partes[0]);
+				this.datosmod.put("status", mdlDetalleHistorico.getESTATUS());
 				this.datosmod.put("usrmod", userPrincipal.getUsername());
 				this.datosmod.put("fecmod", dateTools.get_CurrentDate());
-				this.datosmod.put("idpro", partes[1]);
+				this.datosmod.put("idpro", partes[0]);
 				this.datosmod.put("fecpro", dateTools.get_CurrentDate());
-				this.datosmod.put("puestomod",partes[2]);
+				this.datosmod.put("puestomod",partes[1]);
 			}
 		}else {
 			modeloHistorico.put("error", "FALLECIDO NO ENCONTRADO");

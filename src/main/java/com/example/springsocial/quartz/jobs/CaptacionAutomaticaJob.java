@@ -18,6 +18,7 @@ import com.example.springsocial.process.CaptacionFallecido_RenapDefuncionesProce
 import com.example.springsocial.quartz.PlayService;
 import com.example.springsocial.quartz.timeservice.TimerInfo;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
+import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 import com.example.springsocial.security.UserPrincipal;
 
@@ -40,14 +41,14 @@ public class CaptacionAutomaticaJob implements Job{
 		TimerInfo info = (TimerInfo) jobDataMap.get(CaptacionAutomaticaJob.class.getSimpleName());
 		System.out.println("Hora de consulta: "+ info.getHora());
 		try {
-			tarea(info.getToken(), info.getUserPrincipal(), info.getFecha(), info.getRpCabeceraFolio(), info.getRpDetalleFolio(), info.getHora());
+			tarea(info.getToken(), info.getUserPrincipal(), info.getFecha(), info.getRpCabeceraFolio(), info.getRpDetalleFolio(), info.getRpDetalleHistorico(),info.getHora());
 		} catch (CustomException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public void tarea(String token, String user, String fecha, CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio, Integer Hora) throws CustomException {
+	public void tarea(String token, String user, String fecha, CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio, DetalleFolioHistoricoRepository rpDetalleHistorico, Integer Hora) throws CustomException {
 		try {
 			System.out.println("Tarea automatica: captacion ");
 			captacion.setToken(token);
@@ -55,7 +56,7 @@ public class CaptacionAutomaticaJob implements Job{
 			captacion.setHoraInicia(Hora);
 			captacion.setUser(user);
 			captacion.setEntityManagerFactory(this.entityManagerFactory);
-			captacion.setRespository(rpCabeceraFolio, rpDetalleFolio);
+			captacion.setRespository(rpCabeceraFolio, rpDetalleFolio, rpDetalleHistorico);
 			captacion.ObtenerRegistrosDefuncionesRenap();
 			
 		}catch(JSONException e) {

@@ -25,8 +25,14 @@ public class CabeceraFolioModelN implements Serializable{
 	@Column(name="ORIGEN")
 	private Integer ORIGEN;
 	
+	
+	
 	@Column(name="CODDEPTO")
 	private Integer CODDEPTO;
+	
+	@ManyToOne
+	@JoinColumn()
+	
 	
 	@Column(name="CODMUNIC")
 	private Integer CODMUNIC;

@@ -3,8 +3,7 @@ package com.example.springsocial.crud;
 import java.util.ArrayList;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 
@@ -42,10 +41,16 @@ public class ObjectSetGet {
 		exceptValues.add(attribute);
 	}
 	
-	public JSONObject convertAtJSON() throws JsonProcessingException, JSONException {
+	public JSONObject convertAtJSON() throws JsonProcessingException {
 		Gson gson = new Gson();
 		String jsonStr = gson.toJson(this.object);
-		JSONObject convertObject = new JSONObject(jsonStr);
+		JSONObject convertObject = gson.fromJson(jsonStr, JSONObject.class);
 		return convertObject;
+	}
+	
+	public <T> T convertAtJSONType(Class<T> classOfT) throws JsonProcessingException {
+		Gson gson = new Gson();
+		String jsonStr = gson.toJson(this.object);		 
+		return gson.fromJson(jsonStr, classOfT);
 	}
 }

@@ -68,18 +68,18 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 			
 			data.setObject(element);
 			if (data.getValue("fecha")==null || data.getValue("fecha")=="" ) return new RestResponse(null,new CustomException("Ingrese la fecha",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
-			/*serviceQuartz.setRepository(rpCabeceraFolio, rpDetalleFolio);
+			serviceQuartz.setRepository(rpCabeceraFolio, rpDetalleFolio, rpDetalleHistorico);
 			serviceQuartz.setData(element);
 			serviceQuartz.setToken(authTokenHeader);
 			serviceQuartz.setUserPrincipal(userPrincipal);
-			serviceQuartz.runTarea();*/
-			captacionRenap.setFecha(data.getValue("fecha").toString());
+			serviceQuartz.runTarea();
+			/*captacionRenap.setFecha(data.getValue("fecha").toString());
 			captacionRenap.setEntityManagerFactory(entityManagerFactory);
 			captacionRenap.setRespository(rpCabeceraFolio, rpDetalleFolio);
 			captacionRenap.setData(element);
 			captacionRenap.setToken(authTokenHeader);
 			captacionRenap.setUserPrincipal(userPrincipal);
-			captacionRenap.ObtenerRegistrosDefuncionesRenap();
+			captacionRenap.ObtenerRegistrosDefuncionesRenap();*/
 			
 			
 			if (serviceQuartz.getResponse().getError()!=null)throw new Exception(serviceQuartz.getResponse().getError().toString());
@@ -94,6 +94,8 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 		return response;
 	}
 	
+	@PreAuthorize("hasRole('USER')")
+	@PostMapping("reporteFallecidos")
 	public RestResponse ReportesFallecidos(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request, @RequestBody Object element) {
 		
 		try {
@@ -102,7 +104,17 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 			if (data.getValue("fechaInicio")==null || data.getValue("fechaInicio")=="" ) return new RestResponse(null,new CustomException("Ingrese la fecha inicio",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			if (data.getValue("fechaFinal")==null || data.getValue("fechaFinal")=="" ) return new RestResponse(null,new CustomException("Ingrese la fecha final",ErrorCode.REST_CREATE,this.getClass().getSimpleName(),0));
 			
+			captacionRenap.setEntityManagerFactory(entityManagerFactory);
+			captacionRenap.setUserPrincipal(userPrincipal);
+			captacionRenap.setToken(authTokenHeader);
+			captacionRenap.setData(element);
+			captacionRenap.setRespository(rpCabeceraFolio, rpDetalleFolio, rpDetalleHistorico);
+			captacionRenap.ReportesFallecidos();
 			
+			if (captacionRenap.getResponse().getError()!=null)throw new Exception(captacionRenap.getResponse().getError().toString());
+			else {
+				response.setData(captacionRenap.getResponse().getData());
+			}
 			
 		}catch (Exception exception) {
 			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);
@@ -126,7 +138,7 @@ public class ProcesoAutomaticoController <T> implements CrudController{
 			captacionRenap.setUserPrincipal(userPrincipal);
 			captacionRenap.setToken(authTokenHeader);
 			captacionRenap.setData(element);
-			captacionRenap.setRespository(rpCabeceraFolio, rpDetalleFolio);
+			captacionRenap.setRespository(rpCabeceraFolio, rpDetalleFolio, rpDetalleHistorico);
 			captacionRenap.ObtenerDataVerificados();
 			
 			if (captacionRenap.getResponse().getError()!=null)throw new Exception(captacionRenap.getResponse().getError().toString());

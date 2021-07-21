@@ -12,6 +12,7 @@ import com.example.springsocial.quartz.jobs.CaptacionAutomaticaJob;
 import com.example.springsocial.quartz.timeservice.SchedulerService;
 import com.example.springsocial.quartz.timeservice.TimerInfo;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
+import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 import com.example.springsocial.security.UserPrincipal;
 import com.example.springsocial.tools.RestResponse;
@@ -24,6 +25,8 @@ public class PlayService {
 	private EntityManagerFactory entityManagerFactory;
 	private CabeceraFolioRepositoryN rpCabeceraFolio;
 	private DetalleFolioRepositoryN rpDetalleFolio;
+	@Autowired
+	private DetalleFolioHistoricoRepository rpDetalleHistorico;
 	private UserPrincipal userPrincipal =null;
 	private Object createElement=null;
 	private String token = null;
@@ -39,9 +42,10 @@ public class PlayService {
 	public void setToken(String token) {	this.token = token;}
 	public void setUserPrincipal(UserPrincipal userPrincipal) {this.userPrincipal=userPrincipal;}
 	public void setData(Object createElement) {data.setObject(createElement);}
-	public void setRepository(CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio) {
+	public void setRepository(CabeceraFolioRepositoryN rpCabeceraFolio, DetalleFolioRepositoryN rpDetalleFolio,DetalleFolioHistoricoRepository rpDetalleHistorico) {
 		this.rpCabeceraFolio = rpCabeceraFolio;
 		this.rpDetalleFolio = rpDetalleFolio;
+		this.rpDetalleHistorico = rpDetalleHistorico;
 	}
 	
 	public RestResponse getResponse() {return this.response; }
@@ -60,6 +64,7 @@ public class PlayService {
 			info.setFecha(data.getValue("fecha").toString());
 			info.setRpCabeceraFolio(rpCabeceraFolio);
 			info.setRpDetalleFolio(rpDetalleFolio);
+			info.setRpDetalleHistorico(rpDetalleHistorico);
 			response.setData(scheduler.schedulerTarea(CaptacionAutomaticaJob.class, info));
 		}catch(Exception e) {
 			response.setError(e.getMessage());

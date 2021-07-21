@@ -94,13 +94,24 @@ public class DetalleFolioHistoricoModelN implements Serializable{
 	private String COINCIDENCIAS;
 	@Column(name="REFERENCIAS")
 	private String REFERENCIAS; // ALMACENA DATOS COMO = IDPRO, PUESTOMODIFICA QUE YA TENIA REGISTRADOS
-	
+	@Column(name="ESTATUSPREVIO")
+	private String ESTATUSPREVIO;
 	
 	
 	
 	public DetalleFolioHistoricoModelN() {
 	}
 	
+	
+	
+	public String getESTATUSPREVIO() {
+		return ESTATUSPREVIO;
+	}
+
+	public void setESTATUSPREVIO(String eSTATUSPREVIO) {
+		ESTATUSPREVIO = eSTATUSPREVIO;
+	}
+
 	public String getREFERENCIAS() {
 		return REFERENCIAS;
 	}

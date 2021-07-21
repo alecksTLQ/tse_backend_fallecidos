@@ -3,6 +3,7 @@ package com.example.springsocial.quartz.timeservice;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
+import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 
 public class TimerInfo {
@@ -20,11 +21,21 @@ public class TimerInfo {
 	
 	private DetalleFolioRepositoryN rpDetalleFolio;
 	
+	private DetalleFolioHistoricoRepository rpDetalleHistorico;
+	
 	
 	public TimerInfo() {
 	}
 	
 	
+	public DetalleFolioHistoricoRepository getRpDetalleHistorico() {
+		return rpDetalleHistorico;
+	}
+
+	public void setRpDetalleHistorico(DetalleFolioHistoricoRepository rpDetalleHistorico) {
+		this.rpDetalleHistorico = rpDetalleHistorico;
+	}
+
 	public Integer getHora() {
 		return hora;
 	}

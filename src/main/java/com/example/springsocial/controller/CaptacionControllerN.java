@@ -42,7 +42,7 @@ import com.example.springsocial.tools.SearchCriteriaTools;
 
 @SuppressWarnings({"rawtypes", "unchecked","unused"})
 @RestController
-@RequestMapping("EmisionesDpi")
+@RequestMapping("captacionFallecidos")
 public class CaptacionControllerN <T> implements CrudController{
 	
 	
@@ -53,11 +53,11 @@ public class CaptacionControllerN <T> implements CrudController{
 	@Autowired
 	private EntitiRepository entitiRepository;
 	@Autowired
-	CabeceraFolioRepositoryN rpCabeceraFolio;
+	private CabeceraFolioRepositoryN rpCabeceraFolio;
 	@Autowired
-	DetalleFolioRepositoryN rpDetalleFolio;
+	private DetalleFolioRepositoryN rpDetalleFolio;
 	@Autowired
-	DetalleFolioHistoricoRepository rpDetalleFolioHistorico;
+	private DetalleFolioHistoricoRepository rpDetalleFolioHistorico;
 	
 	private CaptacionFallecidoProcess captacion = new CaptacionFallecidoProcess();
 	private String moduleName="DetalleFolioModelN";

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Blank_Letter" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ff81248e-ac33-457b-b1b7-207fcdb72c9c">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<parameter name="fechaDe" class="java.lang.String"/>
+	<parameter name="fechaA" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="boleta" class="java.lang.String"/>
+	<field name="documento" class="java.lang.String"/>
+	<field name="nombre" class="java.lang.String"/>
+	<field name="folio" class="java.lang.String"/>
+	<field name="año" class="java.lang.String"/>
+	<field name="estatus" class="java.lang.String"/>
+	<field name="fechaDefuncion" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="83" splitType="Stretch">
+			<staticText>
+				<reportElement x="191" y="0" width="190" height="20" uuid="13d27990-14ce-4bbb-9368-43ae98df0689"/>
+				<textElement textAlignment="Center">
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[ESTADISTICA FALLECIDOS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="171" y="20" width="231" height="20" uuid="282e5f5f-f68b-4d77-9ba9-b676da1380b5"/>
+				<textElement textAlignment="Center">
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[Reporte previo - Status Suspendidos]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="161" y="60" width="30" height="20" uuid="3ff1bfad-f24b-4320-b4ef-3ad679c73846"/>
+				<text><![CDATA[Del:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="311" y="60" width="30" height="20" uuid="b6b9fa14-dbf3-487b-acba-5a89b88ee456"/>
+				<text><![CDATA[A:]]></text>
+			</staticText>
+			<image>
+				<reportElement x="10" y="10" width="50" height="50" uuid="a79be592-a8c3-403e-9168-c154589ded85"/>
+				<imageExpression><![CDATA["SkyIcon.png"]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="180" y="60" width="80" height="20" uuid="a5488f3a-53fd-466a-96d9-21a17094e350"/>
+				<textFieldExpression><![CDATA[$P{fechaDe}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="340" y="60" width="80" height="20" uuid="ee204055-c265-4fa9-88d9-2c8804d8aed5"/>
+				<textFieldExpression><![CDATA[$P{fechaA}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="53" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="61" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="70" height="30" uuid="d051a92c-90b9-4f85-a09e-6e50386832df"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No. Boleta]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="70" y="0" width="80" height="30" uuid="ca4ae240-5548-4752-9caf-4184fb47db24"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Documento]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="0" width="190" height="30" uuid="cad6b572-379f-4cf5-8f4f-af8dbe5314dd"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nombre]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="340" y="0" width="50" height="30" uuid="f2c15e7f-6479-4eb2-b084-92dc8c891859"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Folio]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="390" y="0" width="40" height="30" uuid="98c983a2-37eb-4ce4-a13b-bd747e968ec1"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Año]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="430" y="10" width="80" height="20" uuid="9981d973-89f3-448a-9bb8-dcd20ec32d59"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Defuncion]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="430" y="-10" width="80" height="20" uuid="83c4040d-748e-4720-8a82-57780cc334a6"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Fecha]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="510" y="0" width="60" height="30" uuid="bc2c1dc0-8d80-479f-b009-be891877ffe4"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[sp en p]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="32" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="70" height="30" uuid="c5660b59-0603-424e-a9f7-f6342322e0fe">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3a558f97-4952-42ea-b823-fb7b846ebc0d"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="0.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{boleta}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="70" y="0" width="80" height="30" uuid="3f3ea37d-0c66-4c74-b91b-024decf29139">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5c3b9e75-1f46-4263-b490-cda3f865c3e4"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="0.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documento}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="150" y="0" width="190" height="30" uuid="a10638c8-f9c0-42a9-aa5f-4ed00f7fee29">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="4ebf77d0-6509-4a1c-8ef1-d707fa5a76b5"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="0.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="340" y="0" width="50" height="30" uuid="61f442ff-457d-47e6-9d8f-4b6e603c5692">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7246c974-fd17-49c9-b8e1-943182077f93"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="0.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{folio}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="390" y="0" width="40" height="30" uuid="8d0dd837-d13d-44a7-87b1-b2ae9079580b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9d788a58-4e80-45d4-bba8-ae6f894fc280"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="0.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{año}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="510" y="0" width="60" height="30" uuid="9e5e0798-dd44-4925-b24e-bb5b8f203777">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b78b1c46-a060-4ee0-b37e-fa6460611730"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="0.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{estatus}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="430" y="0" width="80" height="30" uuid="eadc4ee3-18e3-4ee9-bfc2-563e94fe3167">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="532a13dc-83aa-4a32-b134-68750cab1c13"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="0.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fechaDefuncion}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>
