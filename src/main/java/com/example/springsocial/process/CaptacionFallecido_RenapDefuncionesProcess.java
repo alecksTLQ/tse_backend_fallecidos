@@ -28,6 +28,7 @@ import com.example.springsocial.model.CabeceraFolioModelN;
 import com.example.springsocial.model.DetalleFolioHistoricoModelN;
 import com.example.springsocial.model.DetalleFolioModelN;
 import com.example.springsocial.model.Idpaquete;
+import com.example.springsocial.model.ReportDeptoMunic;
 import com.example.springsocial.model.ReportEstatusPrevio;
 import com.example.springsocial.repository.CabeceraFolioRepositoryN;
 import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
@@ -76,6 +77,7 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 	private List<DetalleFolioModelN> listaDetalle;
 	private List<CabeceraFolioModelN> listaCabeceraFolio;
 	private List< ReportEstatusPrevio> modeloReport = new ArrayList<ReportEstatusPrevio>();
+	private List< ReportDeptoMunic> modeloDeptoMuni = new ArrayList< ReportDeptoMunic>();
 	private Idpaquete mdlId;
 	//VARIABLES 
 	private String token, fecha=null,IDPAQUETE=null;//
@@ -548,12 +550,45 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
     	}
 	}
 	
-	private void procesarFallecidosDepartamentos(List<DetalleFolioHistoricoModelN> lista) {
-		Integer control = 0, dep=0, muni=0;
+	private void procesarFallecidosDepartamentos(JSONArray lista) {
+		Integer control = 0, dep=0, muni=0, contador4=0, contador8=0, total=0;
+		ReportDeptoMunic modelo = new ReportDeptoMunic();
+		JSONArray contenedor = new JSONArray();
 		for(int i=0;i<lista.size();i++) {
+			JSONObject json = new JSONObject(lista.getJSONObject(i));
+			
 			if(control==0) {
-				
+				dep = json.getJSONObject("IDCABECERAN").getInteger("CODDEPTO");
+				muni = json.getJSONObject("IDCABECERAN").getInteger("CODMUNIC");
+				control = 1;
 			}
+			
+			if(dep==json.getJSONObject("IDCABECERAN").getInteger("CODDEPTO") && muni==json.getJSONObject("IDCABECERAN").getInteger("CODMUNIC")) {
+				if(json.getInteger("ESTATUSF") ==8) {
+					modelo.setDepartamento(json.getJSONObject("IDCABECERAN").getInteger("CODDEPTO").toString());
+					modelo.setMunicipio(json.getJSONObject("IDCABECERAN").getInteger("CODMUNIC").toString());
+					contador8++;
+					modelo.setCancelados(contador8.toString());
+				}
+				
+				if(json.getInteger("ESTATUSF")==4) {
+					modelo.setDepartamento(json.getJSONObject("IDCABECERAN").getInteger("CODDEPTO").toString());
+					modelo.setMunicipio(json.getJSONObject("IDCABECERAN").getInteger("CODMUNIC").toString());
+					contador4++;
+					modelo.setInvestigacion(contador4.toString());
+					
+				}
+				total = contador4+contador8;
+				modelo.setTotal(total.toString());
+			}else {
+				contenedor.add(json);
+			}
+		}
+		
+		modeloDeptoMuni.add(modelo);
+		
+		if(contenedor.size()>0) {
+			procesarFallecidosDepartamentos(contenedor);
 		}
 	}
 	
@@ -572,7 +607,10 @@ public class CaptacionFallecido_RenapDefuncionesProcess {
 				 break;
 			 case 3:
 				 listaHistorico = rpHistorico.selectByDeptoAndMuni(data.getValue("fechaInicio").toString(), data.getValue("fechaFinal").toString());
-				 procesarFallecidosDepartamentos(listaHistorico);
+				 ObjectSetGet objeto = new ObjectSetGet();
+				 objeto.setObject(listaHistorico);
+				 JSONArray objetoJSON = objeto.convertAtJSONType(JSONArray.class);
+				 procesarFallecidosDepartamentos(objetoJSON);
 				 break;
 			 }
 			

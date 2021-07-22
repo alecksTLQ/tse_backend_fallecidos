@@ -38,11 +38,11 @@ JpaRepository<DetalleFolioHistoricoModelN, Long>
 	List<DetalleFolioHistoricoModelN> selectByPrevioSuspendidos(@Param("fechainicio") String fechainicio, @Param("fechafinal") String fechafinal);
 	
 	
-	@Query(value="SELECT DISTINCT c.coddep, c.descripcion as depto, d.codmun, d.descripcion as munic, a.feccre, a.estatusf FROM TDETALLEFOLIOH_N a, TCABECERAFOLIO_N b, "
-			+ "TREFDEPMUN c, TREFDEPMUN d"
+	@Query(value="SELECT DISTINCT * FROM TDETALLEFOLIOH_N a, TCABECERAFOLIO_N b, "
+			+ "TREFDEPMUN c, TREFDEPMUN d "
 			+ "WHERE a.año=b.año and a.idcabecera =b.id and c.coddep=b.coddepto and c.codmun=0 and d.coddep=b.coddepto and d.codmun=b.codmunic And TO_DATE(a.feccre) "
 			+ "BETWEEN TO_DATE(:fechainicio,'DD/MM/YYYY')"
-			+ "AND TO_DATE(:fechafinal,'DD/MM/YYYY') ORDER BY c.coddep, d.codmun;",nativeQuery=true)
+			+ "AND TO_DATE(:fechafinal,'DD/MM/YYYY') ORDER BY c.coddep, d.codmun",nativeQuery=true)
 	List<DetalleFolioHistoricoModelN> selectByDeptoAndMuni(@Param("fechainicio") String fechainicio, @Param("fechafinal") String fechafinal);
 	
 }

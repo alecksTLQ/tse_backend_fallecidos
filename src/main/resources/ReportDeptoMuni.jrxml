@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Blank_Letter" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="bf2c7230-f6d9-494f-acdf-3d8ac9fa9d25">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="municipio" class="java.lang.String"/>
+	<field name="cancelados" class="java.lang.String"/>
+	<field name="investigacion" class="java.lang.String"/>
+	<field name="otros" class="java.lang.String"/>
+	<field name="total" class="java.lang.String"/>
+	<field name="departamento" class="java.lang.String"/>
+	<variable name="departamento1" class="java.lang.Integer" resetType="Group" resetGroup="Group1" calculation="Count">
+		<variableExpression><![CDATA[$F{departamento}]]></variableExpression>
+	</variable>
+	<variable name="Variable_1" class="java.lang.Integer" calculation="Sum"/>
+	<group name="Group1">
+		<groupExpression><![CDATA[$F{departamento}]]></groupExpression>
+		<groupHeader>
+			<band height="62">
+				<textField>
+					<reportElement x="0" y="0" width="100" height="30" uuid="c454ddc0-7697-453e-90b5-5e4238a30b81"/>
+					<textFieldExpression><![CDATA[$V{departamento1}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="130" y="2" width="100" height="30" uuid="136305dc-670c-43f0-88da-f38c8d0f3056"/>
+					<textFieldExpression><![CDATA[$F{cancelados}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="238" y="0" width="99" height="30" uuid="d34446a1-f389-47a8-b356-af6c10f370a7"/>
+					<textFieldExpression><![CDATA[$F{investigacion}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="360" y="0" width="80" height="30" uuid="145249b8-3d10-4a60-bc3a-6e11eb8d217b"/>
+					<textFieldExpression><![CDATA[$F{otros}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="500" y="0" width="69" height="30" uuid="1cf3ead0-79c2-49ec-ba3f-af22122ef1f0"/>
+					<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="32" width="100" height="30" uuid="b13642aa-0218-419d-9137-86e7aa973fad"/>
+					<textFieldExpression><![CDATA[$F{municipio}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="50"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<staticText>
+				<reportElement x="192" y="10" width="189" height="20" uuid="2f0a988b-c248-4cc9-8181-47f02de2ce76"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[ESTADISTICA FALLECIDOS]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="45" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="58" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="30" uuid="e937c7ef-5350-4eca-aff9-a130c05373ee"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Depto. Municipio]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="130" y="0" width="100" height="30" uuid="00712904-5892-4ace-bb62-cabf44318798"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[cancelados(8)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="238" y="0" width="100" height="30" uuid="1c65ee3b-3690-4af0-aa14-e7e6c8f5bafd"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[investigación(4)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="360" y="0" width="80" height="30" uuid="5daab0c2-a096-48f1-a0a0-c73f62bf23e8"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[otros status F]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="500" y="0" width="69" height="30" uuid="2a17a739-6642-48b5-94a6-37a75d304194"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="125" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

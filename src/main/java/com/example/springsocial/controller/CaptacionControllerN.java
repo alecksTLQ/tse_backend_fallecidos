@@ -34,6 +34,8 @@ import com.example.springsocial.repository.DetalleFolioHistoricoRepository;
 import com.example.springsocial.repository.DetalleFolioRepositoryN;
 import com.example.springsocial.repository.ElementRepository;
 import com.example.springsocial.repository.EntitiRepository;
+import com.example.springsocial.repository.TdepRepository;
+import com.example.springsocial.repository.TmunRepository;
 import com.example.springsocial.security.CurrentUser;
 import com.example.springsocial.security.UserPrincipal;
 import com.example.springsocial.tools.DateTools;
@@ -58,6 +60,10 @@ public class CaptacionControllerN <T> implements CrudController{
 	private DetalleFolioRepositoryN rpDetalleFolio;
 	@Autowired
 	private DetalleFolioHistoricoRepository rpDetalleFolioHistorico;
+	@Autowired
+	private TdepRepository rpDep;
+	@Autowired
+	private TmunRepository rpMun;
 	
 	private CaptacionFallecidoProcess captacion = new CaptacionFallecidoProcess();
 	private String moduleName="DetalleFolioModelN";
@@ -239,6 +245,40 @@ public class CaptacionControllerN <T> implements CrudController{
 				
 				response.setData("RECUPERACION DE HISTORICO CORRECTA!");
 			}
+			
+		}catch (Exception exception) {
+			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);
+			response.setError(customExcepction);
+	    }
+		
+		return response;
+	}
+	
+	@PostMapping("municipios")
+	public RestResponse municipios(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) throws CustomException {
+		
+		String authTokenHeader = request.getHeader("Authorization");
+		
+		try {
+		
+			response.setData(rpMun.findAllByOrderByIdAsc());
+			
+		}catch (Exception exception) {
+			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);
+			response.setError(customExcepction);
+	    }
+		
+		return response;
+	}
+	
+	@PostMapping("departamentos")
+	public RestResponse consultamodelos(@CurrentUser UserPrincipal userPrincipal, HttpServletRequest request,@RequestBody Object element) throws CustomException {
+		
+		String authTokenHeader = request.getHeader("Authorization");
+		
+		try {
+		
+			response.setData(rpDep.findAllByOrderByIdAsc());
 			
 		}catch (Exception exception) {
 			CustomException customExcepction= new CustomException(exception.getMessage(),ErrorCode.REST_UPDATE,this.getClass().getSimpleName(), 0);
